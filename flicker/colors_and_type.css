@@ -1,0 +1,346 @@
+/* =============================================================
+   Flicker Design System — Colors & Type
+   =============================================================
+   Brand: Flicker (AI book summaries)
+   Built on shadcn/ui conventions: HSL tokens, Tailwind-friendly.
+
+   Color system has two layers:
+   1. BASE — the core 4 colors. Use these first; prioritise when
+      the palette needs to be limited.
+   2. EXTENDED — accents for marketing flexibility & secondary
+      moments; reach for these sparingly.
+
+   Fonts:
+   - Display:  GT Super Display Trial (.otf in fonts/) — hero / display sizes
+   - Headings: GT Super Text Trial    (.otf in fonts/) — h1/h2/h3, body serif
+   - Body:     Outfit (Google Fonts)
+   ============================================================= */
+
+@import url("../vendor/outfit/outfit.css");
+
+/* GT Super Display Trial — for display / hero type (very large sizes).
+   Higher contrast, more dramatic ball-terminals. */
+@font-face {
+  font-family: "GT Super Display Trial";
+  src: url("fonts/GT-Super-Display-Light-Trial.otf") format("opentype");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Display Trial";
+  src: url("fonts/GT-Super-Display-Regular-Trial.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Display Trial";
+  src: url("fonts/GT-Super-Display-Medium-Trial.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Display Trial";
+  src: url("fonts/GT-Super-Display-Bold-Trial.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Display Trial";
+  src: url("fonts/GT-Super-Display-Super-Trial.otf") format("opentype");
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+/* GT Super Text Trial — for headings & shorter text (h1–h3, pull quotes).
+   Optical size optimised for body / heading sizes. */
+@font-face {
+  font-family: "GT Super Text Trial";
+  src: url("fonts/GT-Super-Text-Book-Trial.otf") format("opentype");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Text Trial";
+  src: url("fonts/GT-Super-Text-Regular-Trial.otf") format("opentype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Text Trial";
+  src: url("fonts/GT-Super-Text-Medium-Trial.otf") format("opentype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Text Trial";
+  src: url("fonts/GT-Super-Text-Bold-Trial.otf") format("opentype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "GT Super Text Trial";
+  src: url("fonts/GT-Super-Text-Black-Trial.otf") format("opentype");
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+/* -------------------------------------------------------------
+   1. BASE COLORS (raw tokens)
+   ------------------------------------------------------------- */
+:root {
+  /* Base palette — used most frequently, prioritise these */
+  --flicker-brick:        #C13441;   /* Brick Red    · PANTONE 4060 C · brand signature */
+  --flicker-salmon:       #FFB3B3;   /* Young Salmon · PANTONE 169 C  · soft pink accent */
+  --flicker-almond:       #FFE5D2;   /* Almond       · PANTONE 9200 C · default page canvas */
+  --flicker-cosmos:       #561D20;   /* Red Cosmos   · PANTONE 4102 C · deep partner red */
+
+  /* Body / ink */
+  --flicker-body:         #22191B;   /* body color, near-black */
+  --flicker-ink:          #22191B;   /* alias */
+  --flicker-ink-soft:     #3D3034;   /* secondary text */
+  --flicker-ink-mute:     #7A6B6F;   /* muted text, captions */
+
+  /* Surface neutrals — tinted cream is the primary canvas */
+  --flicker-canvas:       #FFF9EC;   /* PRIMARY tinted background — default page surface */
+  --flicker-paper:        #FFFEFB;   /* paper white — elevated cards on canvas */
+  --flicker-canvas-soft:  #FBF3DE;   /* subtle section bands */
+  --flicker-canvas-shade: #ECDFC4;   /* hairline borders */
+}
+
+/* -------------------------------------------------------------
+   2. EXTENDED PALETTE (accents — use sparingly)
+   ------------------------------------------------------------- */
+:root {
+  --flicker-misty-rose:        #FFDAD4;   /* PANTONE 4032 C · soft warm accent */
+  --flicker-brunswick-light:   #9FF2E1;   /* PANTONE Green 0921 C · cool light */
+  --flicker-brunswick-green:   #005046;   /* PANTONE 3305 C · deep cool */
+  --flicker-prussian-blue:     #003353;   /* PANTONE 7463 C · deep cool */
+  --flicker-baby-blue:         #9BCBFB;   /* PANTONE 283 C · soft cool */
+  --flicker-liver:             #73342A;   /* PANTONE 212 C · earthy red-brown */
+
+  /* Functional accents (mapped from extended palette where possible) */
+  --flicker-success: var(--flicker-brunswick-green);
+  --flicker-info:    var(--flicker-prussian-blue);
+  --flicker-warning: #C99A2E;   /* amber — kept as utility */
+  --flicker-danger:  var(--flicker-brick);
+}
+
+/* -------------------------------------------------------------
+   3. Shadcn-style HSL tokens (semantic, drive components)
+   ------------------------------------------------------------- */
+:root {
+  --background:        43 100% 96%;  /* canvas #FFF9EC — tinted cream */
+  --foreground:        345 14% 12%;  /* body #22191B */
+
+  --card:              40 100% 99%;  /* paper #FFFEFB */
+  --card-foreground:   345 14% 12%;
+
+  --popover:           40 100% 99%;
+  --popover-foreground: 345 14% 12%;
+
+  --primary:           355 58% 48%;  /* brick #C13441 */
+  --primary-foreground: 43 100% 96%;
+
+  --secondary:         357 51% 23%;  /* red cosmos #561D20 */
+  --secondary-foreground: 43 100% 96%;
+
+  --muted:             39 56% 85%;   /* canvas-shade */
+  --muted-foreground:  345 8% 38%;
+
+  --accent:            25 100% 91%;  /* almond #FFE5D2 — warm accent surface */
+  --accent-foreground: 357 51% 23%;
+
+  --destructive:       0 72% 42%;
+  --destructive-foreground: 43 100% 96%;
+
+  --border:            39 56% 78%;
+  --input:             39 56% 78%;
+  --ring:              355 58% 48%;
+
+  --radius: 0.625rem;                /* 10px — shadcn default-ish */
+}
+
+/* Dark mode (Red Cosmos as bg) */
+.dark {
+  --background:        345 14% 8%;
+  --foreground:        25 100% 95%;
+
+  --card:              357 51% 18%;
+  --card-foreground:   25 100% 95%;
+
+  --popover:           345 14% 10%;
+  --popover-foreground: 25 100% 95%;
+
+  --primary:           355 65% 56%;
+  --primary-foreground: 25 100% 95%;
+
+  --secondary:         24 30% 18%;
+  --secondary-foreground: 25 100% 95%;
+
+  --muted:             345 8% 18%;
+  --muted-foreground:  25 30% 75%;
+
+  --accent:            0 100% 85%;
+  --accent-foreground: 345 14% 8%;
+
+  --destructive:       0 72% 50%;
+  --destructive-foreground: 25 100% 95%;
+
+  --border:            345 10% 22%;
+  --input:             345 10% 22%;
+  --ring:              355 65% 56%;
+}
+
+/* -------------------------------------------------------------
+   4. Type system
+   ------------------------------------------------------------- */
+:root {
+  --font-serif:         "GT Super Text Trial", "GT Super", Georgia, serif;
+  --font-serif-display: "GT Super Display Trial", "GT Super", Georgia, serif;
+  --font-sans:  "Outfit", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale — based on Tailwind's default but with display steps */
+  --text-xs:    0.75rem;      /*  12 */
+  --text-sm:    0.875rem;     /*  14 */
+  --text-base:  1rem;         /*  16 */
+  --text-lg:    1.125rem;     /*  18 */
+  --text-xl:    1.25rem;      /*  20 */
+  --text-2xl:   1.5rem;       /*  24 */
+  --text-3xl:   1.875rem;     /*  30 */
+  --text-4xl:   2.25rem;      /*  36 */
+  --text-5xl:   3rem;         /*  48 */
+  --text-6xl:   3.75rem;      /*  60 */
+  --text-7xl:   4.5rem;       /*  72 */
+  --text-8xl:   6rem;         /*  96 */
+
+  /* Line-heights */
+  --leading-tight:   1.1;
+  --leading-snug:    1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+}
+
+/* -------------------------------------------------------------
+   5. Semantic typography classes
+   ------------------------------------------------------------- */
+.t-display {
+  font-family: var(--font-serif-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.02;
+  font-weight: 900;
+  letter-spacing: -0.05em;  /* -5% tracking */
+  color: var(--flicker-body);
+}
+
+.t-h1 {
+  font-family: var(--font-serif);
+  font-size: var(--text-5xl);
+  line-height: 1.08;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.t-h2 {
+  font-family: var(--font-serif);
+  font-size: var(--text-4xl);
+  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.t-h3 {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+.t-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--flicker-brick);
+}
+
+.t-lead {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--flicker-ink-soft);
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--flicker-body);
+}
+
+.t-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.t-caption {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--flicker-ink-mute);
+}
+
+.t-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-2xl);
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+/* -------------------------------------------------------------
+   6. Spacing / radius / shadow / motion
+   ------------------------------------------------------------- */
+:root {
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  --radius-sm:   0.375rem;
+  --radius-md:   0.625rem;
+  --radius-lg:   0.875rem;
+  --radius-xl:   1.25rem;
+  --radius-2xl:  1.75rem;
+  --radius-full: 9999px;
+
+  /* Subtle shadow system — Flicker stays restrained */
+  --shadow-xs: 0 1px 2px 0 hsl(345 30% 10% / 0.04);
+  --shadow-sm: 0 1px 3px 0 hsl(345 30% 10% / 0.06), 0 1px 2px -1px hsl(345 30% 10% / 0.04);
+  --shadow-md: 0 4px 12px -2px hsl(345 30% 10% / 0.08), 0 2px 4px -2px hsl(345 30% 10% / 0.05);
+  --shadow-lg: 0 12px 28px -8px hsl(345 30% 10% / 0.12), 0 4px 10px -3px hsl(345 30% 10% / 0.06);
+  --shadow-xl: 0 24px 48px -12px hsl(345 30% 10% / 0.18);
+
+  /* Motion */
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:     120ms;
+  --dur-base:     200ms;
+  --dur-slow:     320ms;
+}
+
+/* -------------------------------------------------------------
+   7. Base reset hooks (use selectively)
+   ------------------------------------------------------------- */
+.flicker-root {
+  background: var(--flicker-canvas);
+  color: var(--flicker-body);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
