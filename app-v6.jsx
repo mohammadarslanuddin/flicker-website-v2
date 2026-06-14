@@ -81,8 +81,14 @@ function App() {
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 1.4,
-      effects: true,
-      normalizeScroll: true,
+      // No data-speed / data-lag effects exist anywhere in the markup, so the
+      // effects pipeline was doing per-tick bookkeeping for zero payoff.
+      effects: false,
+      // normalizeScroll hands wheel/touch input to JS instead of letting the
+      // browser scroll natively — a common source of "heavy"/laggy desktop
+      // scroll feel. Off = native scroll drives the smoother. Set back to true
+      // if mobile address-bar resize jank reappears.
+      normalizeScroll: false,
     });
     return () => {
       if (smoother && smoother.kill) smoother.kill();

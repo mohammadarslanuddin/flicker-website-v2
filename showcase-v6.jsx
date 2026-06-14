@@ -244,6 +244,7 @@ function SubjectShowcase() {
       let moved = false;                      // crossed the drag threshold
       let startX = 0,startPos = 0,lastX = 0,lastT = 0;
       let raf = 0,prev = 0;
+      let visible = true;                     // false → loop idles (off-screen)
 
       const apply = () => {track.style.transform = `translateX(${pos}px)`;};
       const wrap = () => {
@@ -266,7 +267,9 @@ function SubjectShowcase() {
           wrap();
           apply();
         }
-        raf = requestAnimationFrame(frame);
+        // Stop re-arming once off-screen — this loop otherwise writes a
+        // transform every frame forever, even parked and out of view.
+        raf = visible ? requestAnimationFrame(frame) : 0;
       };
 
       // Hover pause (delegated — covers have pointer-events:auto).
@@ -341,7 +344,17 @@ function SubjectShowcase() {
       prev = performance.now();
       raf = requestAnimationFrame(frame);
 
+      // Idle the marquee loop while the carousel is off-screen.
+      const io = new IntersectionObserver((entries) => {
+        const nowVisible = entries.some((e) => e.isIntersecting);
+        if (nowVisible === visible) return;
+        visible = nowVisible;
+        if (visible && !raf) { prev = performance.now(); raf = requestAnimationFrame(frame); }
+      }, { rootMargin: "200px" });
+      io.observe(carousel);
+
       return () => {
+        io.disconnect();
         cancelAnimationFrame(raf);
         track.removeEventListener("mouseover", onOver);
         track.removeEventListener("mouseout", onOut);

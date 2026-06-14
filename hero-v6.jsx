@@ -430,6 +430,8 @@ function HeroV3({ tweaks, setTweak }) {
     let W = 0,H = 0;
     let raf = 0;
     let cancelled = false;
+    let io = null;       // pauses the loop + tweens when the hero is off-screen
+    let visible = true;
     const tweens = [];
     const cards = [];
 
@@ -566,8 +568,22 @@ function HeroV3({ tweaks, setTweak }) {
           ctx.restore();
         }
 
-        raf = requestAnimationFrame(render);
+        raf = visible ? requestAnimationFrame(render) : 0;
       };
+
+      // Pause the canvas redraw AND the orbiting tweens whenever the hero is
+      // fully off-screen. Without this, an 8-tween infinite animation plus a
+      // 60fps full-canvas redraw keep burning CPU the entire time the user is
+      // reading the rest of the page. rootMargin wakes it just before re-entry.
+      io = new IntersectionObserver((entries) => {
+        const nowVisible = entries.some((e) => e.isIntersecting);
+        if (nowVisible === visible) return;
+        visible = nowVisible;
+        tweens.forEach((t) => t && t.paused(!visible));
+        if (visible && !raf) raf = requestAnimationFrame(render);
+      }, { rootMargin: "200px" });
+      io.observe(wrap);
+
       raf = requestAnimationFrame(render);
     });
 
@@ -575,6 +591,7 @@ function HeroV3({ tweaks, setTweak }) {
       cancelled = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
+      if (io) io.disconnect();
       tweens.forEach((t) => t.kill());
       cards.forEach((c) => gsap.killTweensOf(c));
     };

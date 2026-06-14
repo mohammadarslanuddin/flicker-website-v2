@@ -82,7 +82,7 @@ function Growing() {
     const loadLottie = (holder) => {
       if (typeof lottie === "undefined" || holder.__anim) return null;
       const a = lottie.loadAnimation({
-        container: holder, renderer: "svg", loop: false, autoplay: false,
+        container: holder, renderer: "canvas", loop: false, autoplay: false,
         path: holder.dataset.lottie,
         rendererSettings: { progressiveLoad: true, preserveAspectRatio: "xMidYMid meet" }
       });
