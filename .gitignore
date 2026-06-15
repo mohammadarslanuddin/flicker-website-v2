@@ -1,0 +1,5 @@
+# Local Claude Code git worktrees (agent-created; not part of the project)
+.claude/worktrees/
+
+# Local-only Claude Code settings
+.claude/settings.local.json
