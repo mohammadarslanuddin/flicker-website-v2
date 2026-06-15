@@ -269,20 +269,6 @@ function HeroV3({ tweaks, setTweak }) {
       wire(el, enter, leave);
     });
 
-    // Nav links \u2014 micro lift + scale
-    document.querySelectorAll(".nav-link").forEach((el) => {
-      const enter = () =>
-      gsap.to(el, { y: -1, scale: 1.04, duration: 0.25, ease: "power3.out", overwrite: "auto" });
-      const leave = () =>
-      gsap.to(el, { y: 0, scale: 1, duration: 0.3, ease: "power3.out", overwrite: "auto" });
-      el.addEventListener("mouseenter", enter);
-      el.addEventListener("mouseleave", leave);
-      cleanups.push(() => {
-        el.removeEventListener("mouseenter", enter);
-        el.removeEventListener("mouseleave", leave);
-      });
-    });
-
     // Book-card dismiss (\u00d7) \u2014 gentle scale on hover, distinct from card lift
     document.querySelectorAll(".book-card-dismiss").forEach((el) => {
       const enter = () =>
@@ -742,17 +728,17 @@ function HeroV3({ tweaks, setTweak }) {
         
         {/* Eyebrow removed per direction — content sits cleanly centered. */}
 
-        {/* Display headline — GT Super Display.
+        {/* Display headline — Fraunces (display optical size).
                                                                               Top line: rolling-text rotator. Black weight (900).
                                                                               Bottom line: static "in Minutes." in italic light brick. */}
         <h1
             style={{
               margin: 0,
               fontFamily: "var(--font-serif-display)",
-              fontWeight: 900,
+              fontWeight: 700,
               fontSize: "clamp(48px, 8vw, 132px)",
               lineHeight: 1,
-              letterSpacing: "-0.05em",
+              letterSpacing: "-0.02em",
               color: "var(--ink)",
               maxWidth: 1200,
               textWrap: "balance"
@@ -763,7 +749,7 @@ function HeroV3({ tweaks, setTweak }) {
               className="headline-roll"
               style={{
                 display: "block",
-                fontWeight: 900, fontFamily: "\"GT Super Display Trial\""
+                fontWeight: 700, fontFamily: "var(--font-serif-display)"
               }}>
             
             Grow Smarter,
@@ -773,7 +759,7 @@ function HeroV3({ tweaks, setTweak }) {
                 display: "block",
                 fontStyle: "italic",
 
-                color: "var(--brick)", lineHeight: 1, fontWeight: "600", fontSize: "clamp(48px, 8vw, 132px)", fontFamily: "\"GT Super Display Trial\""
+                color: "var(--brick)", lineHeight: 1, fontWeight: "700", fontSize: "clamp(48px, 8vw, 132px)", fontFamily: "var(--font-serif-display)"
               }}>in minutes.
 
 
@@ -888,7 +874,7 @@ function HeroV3({ tweaks, setTweak }) {
 
             <div className="book-card-text">
               <span className="book-card-badge" style={{ fontWeight: "400", fontSize: "9px" }}>Book of the week</span>
-              <span className="book-card-title" style={{ letterSpacing: "-0.8px", fontSize: "16px" }}>Atomic Habits</span>
+              <span className="book-card-title" style={{ letterSpacing: "-0.04em", fontSize: "16px" }}>Atomic Habits</span>
               <span className="book-card-meta">
                 <span>James Clear</span>
                 <span aria-hidden="true" className="book-card-meta-dot" />
@@ -999,7 +985,7 @@ function AfterHeroV3() {
           maxWidth: 920,
           color: "var(--ink)",
           textWrap: "pretty",
-          fontWeight: 500
+          fontWeight: 700
         }}>
         
         Every Flicker is a 15-minute distillation written by editors, not

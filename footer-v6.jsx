@@ -62,10 +62,10 @@ const FOOTER_CSS = `
   .site-footer .footer-heading {
     margin: clamp(44px, 5.5vw, 84px) 0 0;
     font-family: var(--f-serif);
-    font-weight: 900;
+    font-weight: 700;
     font-size: clamp(3.25rem, 12.5vw, 10rem);
     line-height: 1.12;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.02em;
     color: var(--ink);
     text-align: center;
     text-wrap: balance;
@@ -126,7 +126,7 @@ const FOOTER_CSS = `
     font-weight: 600;
     font-size: clamp(19px, 1.6vw, 24px);
     line-height: 1.12;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
     color: var(--ink);
   }
   .site-footer .footer-newsletter .footer-col-title { max-width: 16ch; }
@@ -267,7 +267,7 @@ function SiteFooter() {
             {/* Top CTA */}
             <div className="footer-cta">
               <p className="footer-eyebrow eyebrow">Join a growing library of<br />the world’s best ideas</p>
-              <h2 className="footer-heading" style={{ fontSize: "63px", fontFamily: '"GT Super Text Trial"', color: "rgb(82, 28, 31)", letterSpacing: "-5px", lineHeight: "0.95" }}>
+              <h2 className="footer-heading" style={{ fontSize: "63px", fontFamily: 'var(--font-serif)', color: "rgb(82, 28, 31)", letterSpacing: "-0.02em", lineHeight: "0.95" }}>
                 <div><span style={{ color: "rgb(201, 26, 58)", fontSize: "63px" }}>One Idea, Every Week</span></div>
                 <div style={{ fontSize: "63px" }}>Habit-framed.</div>
               </h2>

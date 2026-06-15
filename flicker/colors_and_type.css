@@ -11,68 +11,13 @@
       moments; reach for these sparingly.
 
    Fonts:
-   - Display:  GT Super Display Trial (.otf in fonts/) — hero / display sizes
-   - Headings: GT Super Text Trial    (.otf in fonts/) — h1/h2/h3, body serif
-   - Body:     Outfit (Google Fonts)
+   - Serif:  Fraunces (variable · opsz 9–144 · wght 300–900) — display + headings.
+             Open-source (SIL OFL), self-hosted in vendor/fraunces/.
+   - Body:   Outfit — open-source (Google Fonts), self-hosted in vendor/outfit/.
    ============================================================= */
 
 @import url("../vendor/outfit/outfit.css");
-
-/* GT Super Display Trial — for display / hero type (very large sizes).
-   Higher contrast, more dramatic ball-terminals. */
-@font-face {
-  font-family: "GT Super Display Trial";
-  src: url("fonts/GT-Super-Display-Light-Trial.otf") format("opentype");
-  font-weight: 300; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Display Trial";
-  src: url("fonts/GT-Super-Display-Regular-Trial.otf") format("opentype");
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Display Trial";
-  src: url("fonts/GT-Super-Display-Medium-Trial.otf") format("opentype");
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Display Trial";
-  src: url("fonts/GT-Super-Display-Bold-Trial.otf") format("opentype");
-  font-weight: 700; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Display Trial";
-  src: url("fonts/GT-Super-Display-Super-Trial.otf") format("opentype");
-  font-weight: 900; font-style: normal; font-display: swap;
-}
-
-/* GT Super Text Trial — for headings & shorter text (h1–h3, pull quotes).
-   Optical size optimised for body / heading sizes. */
-@font-face {
-  font-family: "GT Super Text Trial";
-  src: url("fonts/GT-Super-Text-Book-Trial.otf") format("opentype");
-  font-weight: 300; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Text Trial";
-  src: url("fonts/GT-Super-Text-Regular-Trial.otf") format("opentype");
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Text Trial";
-  src: url("fonts/GT-Super-Text-Medium-Trial.otf") format("opentype");
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Text Trial";
-  src: url("fonts/GT-Super-Text-Bold-Trial.otf") format("opentype");
-  font-weight: 700; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "GT Super Text Trial";
-  src: url("fonts/GT-Super-Text-Black-Trial.otf") format("opentype");
-  font-weight: 900; font-style: normal; font-display: swap;
-}
+@import url("../vendor/fraunces/fraunces.css");
 
 /* -------------------------------------------------------------
    1. BASE COLORS (raw tokens)
@@ -185,8 +130,8 @@
    4. Type system
    ------------------------------------------------------------- */
 :root {
-  --font-serif:         "GT Super Text Trial", "GT Super", Georgia, serif;
-  --font-serif-display: "GT Super Display Trial", "GT Super", Georgia, serif;
+  --font-serif:         "Fraunces", Georgia, "Times New Roman", serif;
+  --font-serif-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans:  "Outfit", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
   --font-mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
@@ -218,8 +163,8 @@
   font-family: var(--font-serif-display);
   font-size: clamp(2.5rem, 6vw, 5rem);
   line-height: 1.02;
-  font-weight: 900;
-  letter-spacing: -0.05em;  /* -5% tracking */
+  font-weight: 700;
+  letter-spacing: -0.02em;  /* -2% tracking — larger headings & titles */
   color: var(--flicker-body);
 }
 
@@ -227,15 +172,15 @@
   font-family: var(--font-serif);
   font-size: var(--text-5xl);
   line-height: 1.08;
-  font-weight: 400;
-  letter-spacing: -0.04em;
+  font-weight: 700;
+  letter-spacing: -0.02em;   /* -2% — larger heading */
 }
 
 .t-h2 {
   font-family: var(--font-serif);
   font-size: var(--text-4xl);
   line-height: 1.1;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 
@@ -243,7 +188,7 @@
   font-family: var(--font-serif);
   font-size: var(--text-2xl);
   line-height: 1.2;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 
@@ -292,7 +237,7 @@
   font-style: italic;
   font-size: var(--text-2xl);
   line-height: 1.35;
-  font-weight: 400;
+  font-weight: 700;
 }
 
 /* -------------------------------------------------------------
@@ -341,6 +286,13 @@
   background: var(--flicker-canvas);
   color: var(--flicker-body);
   font-family: var(--font-sans);
+  /* Let Fraunces' optical-size axis track the rendered size so large display
+     type picks up the high-contrast display cut automatically. */
+  font-optical-sizing: auto;
+  /* Fraunces brand cut: SOFT axis pinned to 69 (softer terminals), applied
+     globally. Inherited by all text; fonts without a SOFT axis (Outfit,
+     Phosphor) ignore it. opsz still auto-sizes because no opsz is pinned here. */
+  font-variation-settings: "SOFT" 69;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -115,7 +115,7 @@ const TM_CSS = `
   }
   .tm-h2 {
     margin: 0;
-    font-family: var(--font-serif);   /* GT Super Text Trial — same as .sw-h2 */
+    font-family: var(--font-serif);   /* Fraunces — same as .sw-h2 */
     font-weight: 700;
     font-size: clamp(28px, 3vw, 44px);
     line-height: 1.12;
@@ -163,8 +163,8 @@ const TM_CSS = `
   }
   .tm-quote {
     margin: 0;
-    font-family: var(--font-serif);   /* GT Super Text Trial */
-    font-weight: 500;
+    font-family: var(--font-serif);   /* Fraunces */
+    font-weight: 700;
     font-size: clamp(18px, 1.4vw, 22px);
     line-height: 1.45;
     letter-spacing: -0.01em;
@@ -362,7 +362,7 @@ function Testimonials() {
     return parts.map((w, k) => {
       const idx = hIdx++;
       return (
-        <span key={idx} className="tm-word" ref={(el) => {if (el) headWordRefs.current[idx] = el;}} style={{ fontWeight: "900" }}>
+        <span key={idx} className="tm-word" ref={(el) => {if (el) headWordRefs.current[idx] = el;}} style={{ fontWeight: "700" }}>
           {w}{k < parts.length - 1 ? " " : ""}
         </span>);
 

@@ -35,19 +35,19 @@ index.html                 entry (was Home.html); all <script>/<link> point at /
 app-v6.jsx                 app root + ScrollSmoother init + section composition
 *-v6.jsx, site-nav.jsx     section components (compiled in-browser by Babel)
 image-slot.js              <image-slot> custom element (Member-CTA media slot)
-flicker/                   colors_and_type.css (design tokens) + GT-Super fonts + brand SVGs
+flicker/                   colors_and_type.css (design tokens) + brand SVGs
 uploads/                   Lottie JSON, background SVGs, audio webm, avatars/
 books/                     book cover art (01–13)
 vendor/                    react, react-dom, babel, gsap(+ScrollTrigger,Flip,ScrollSmoother),
-                           lottie, phosphor/ (icon CSS+fonts), outfit/ (Outfit webfont)
+                           lottie, phosphor/ (icon CSS+fonts), outfit/ + fraunces/ (webfonts)
 .image-slots.state.json    empty sidecar so image-slot.js loads without a 404
 ```
 
 ## Notes for production
 
-- **Fonts — GT-Super** (`flicker/fonts/*-Trial.otf`) are **trial** files. Replace
-  with a licensed copy before shipping. **Outfit** (UI sans) is open-source
-  (Google Fonts), self-hosted under `vendor/outfit/`.
+- **Fonts** are open-source and self-hosted (zero external requests): **Fraunces**
+  (serif display/headings, SIL OFL) under `vendor/fraunces/`, and **Outfit**
+  (UI sans, Google Fonts) under `vendor/outfit/`.
 - **GSAP ScrollSmoother** (`vendor/ScrollSmoother.min.js`) is a GSAP Club plugin
   served here as the prototype's trial build — swap for your licensed copy.
 - **In-browser Babel** compiles the JSX on every load. Fine for a faithful static

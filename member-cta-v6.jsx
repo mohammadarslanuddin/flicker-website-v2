@@ -34,20 +34,20 @@ const MEMBER_CTA_CSS = `
     will-change: opacity, transform;
   }
 
-  /* ---- Headline — big tonal display, set in GT Super Text Trial ---- */
+  /* ---- Headline — big tonal display, set in Fraunces ---- */
   .mcta-heading {
     margin: 0;
-    font-family: "GT Super Text Trial", var(--font-serif);
-    font-weight: 900;
+    font-family: var(--font-serif);
+    font-weight: 700;
     font-size: 65px;
     line-height: 1.08;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.02em;
     text-align: center;
     text-wrap: balance;
     color: #FFF9EC;
   }
   .mcta-heading .dim { color: rgba(255, 249, 236, 0.45); }
-  .mcta-heading strong { font-weight: 900; }
+  .mcta-heading strong { font-weight: 700; }
 
   /* ---- Pill buttons — small uppercase labels, arrow accent ---- */
   .mcta-btn {

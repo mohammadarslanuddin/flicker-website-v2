@@ -340,25 +340,25 @@ function HowItWorks() {
         onEnter: loadLotties
       });
 
-      // Exit fade — uses scrub:true (zero lag) so fast-scrolling immediately
-      // drives opacity to 0 rather than waiting for the 1-second scrub tween.
-      // Covers the last 10% of the pinned scroll (0.7 × vH of travel), ensuring
-      // the section is fully invisible before the Showcase section appears.
+      // EXIT — once the pin releases, the section scrolls up in normal flow
+      // like the sections ahead (Showcase / Growing) instead of fading in
+      // place. Anchoring the trigger to the section BOTTOM (not a pinned-scroll
+      // offset) means this only runs AFTER the pin lets go, so the panel rides
+      // up with the scroll and fades out over the following viewport — the next
+      // section (Showcase) only appears once this one has almost gone. Blur is
+      // held off until the fade passes 50% so it dissolves cleanly, then softens.
       exitST = ScrollTrigger.create({
         trigger: section,
-        start: () => `top+=${Math.round(window.innerHeight * 6.3)} top`,
-        end: () => `top+=${Math.round(window.innerHeight * 7)} top`,
-        scrub: true,
-        invalidateOnRefresh: true,
+        start: "bottom bottom",
+        end: "bottom top",
+        scrub: 1,
         onUpdate: (self) => {
+          const e = self.progress;
           if (pinRef.current) {
-            pinRef.current.style.opacity = String(1 - smooth(self.progress));
+            pinRef.current.style.opacity = String(1 - e);
+            const b = e > 0.5 ? (e - 0.5) / 0.5 * 20 : 0;
+            pinRef.current.style.filter = b > 0 ? `blur(${b}px)` : "none";
           }
-        },
-        onLeave: () => {
-          // Fires on raw scroll position — no lag. Guarantees opacity=0 even
-          // if a jump-scroll skipped past the onUpdate range entirely.
-          if (pinRef.current) pinRef.current.style.opacity = "0";
         }
       });
 
@@ -433,7 +433,7 @@ function HowItWorks() {
 
         {/* Heading (genre-scrub phase, top-left) */}
         <div ref={headingRef} className="hiw-heading">
-          <p className="t-h1" style={{ fontFamily: "\"GT Super Text Trial\"", letterSpacing: "-2.5px" }}>{renderHeadWords("Three steps from a great book to a clear insight you can use today.")}</p>
+          <p className="t-h1" style={{ fontFamily: "var(--font-serif)", letterSpacing: "-0.02em" }}>{renderHeadWords("Three steps from a great book to a clear insight you can use today.")}</p>
         </div>
 
         {/* Genre rows (full-bleed, behind the box) */}
@@ -466,7 +466,7 @@ function HowItWorks() {
                 {BEATS.map((b, i) =>
                 <div key={i} ref={railBeatRefs[i]} className="rail-beat" style={{ opacity: i === 0 ? 1 : 0 }}>
                     <p className="rail-step" style={{ fontSize: "14px" }}>{b.step}</p>
-                    <p className="rail-title" style={{ fontFamily: "\"GT Super Text Trial\"", fontWeight: "900", letterSpacing: "-0.5px", fontSize: "21px" }}>{b.title}</p>
+                    <p className="rail-title" style={{ fontFamily: "var(--font-serif)", fontWeight: "700", letterSpacing: "-0.04em", fontSize: "21px" }}>{b.title}</p>
                   </div>
                 )}
               </div>

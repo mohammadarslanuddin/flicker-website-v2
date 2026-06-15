@@ -81,12 +81,12 @@ is for sparing accents. `app-v6.jsx`'s `TONES` map and `applyTone()` only ever s
   forward through ports if 8000 is busy.
 
 ## Assets
-- `flicker/` — design tokens CSS, GT-Super fonts, brand SVGs.
+- `flicker/` — design tokens CSS, brand SVGs.
 - `vendor/` — React, ReactDOM, Babel, GSAP (+ ScrollTrigger, Flip, ScrollSmoother), Lottie,
-  Phosphor icons (`regular` + `fill`), Outfit webfont.
+  Phosphor icons (`regular` + `fill`), Outfit + Fraunces webfonts.
 - `uploads/` — Lottie JSON, background SVGs, audio, avatars. `books/` — cover art `01–13.png`.
 
 ## Production caveats (from README)
-- **GT-Super fonts** (`flicker/fonts/*-Trial.otf`) are **trial** files — replace with licensed copies.
+- **Fonts** are open-source and self-hosted (zero external requests): **Fraunces** (serif, SIL OFL) in `vendor/fraunces/`, **Outfit** (sans) in `vendor/outfit/`.
 - **ScrollSmoother** is a GSAP Club plugin shipped here as the prototype's trial build — swap for a licensed copy.
 - In-browser Babel recompiles on every load; for a fast production build, precompile (e.g. Vite).
