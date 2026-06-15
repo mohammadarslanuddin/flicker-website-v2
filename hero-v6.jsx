@@ -259,12 +259,10 @@ function HeroV3({ tweaks, setTweak }) {
       const enter = () => {
         gsap.to(el, { scale: 1.04, y: -2, duration: 0.32, ease: "power3.out", overwrite: "auto" });
         if (arrow) gsap.to(arrow, { x: 4, duration: 0.32, ease: "power3.out", overwrite: "auto" });
-        if (window.fxMotionBlur) window.fxMotionBlur(el, { k: 1.3, max: 8 });
       };
       const leave = () => {
         gsap.to(el, { scale: 1, y: 0, duration: 0.4, ease: "power3.out", overwrite: "auto" });
         if (arrow) gsap.to(arrow, { x: 0, duration: 0.4, ease: "power3.out", overwrite: "auto" });
-        if (window.fxMotionBlur) window.fxMotionBlur(el, { k: 1.3, max: 8 });
       };
       wire(el, enter, leave);
     });
@@ -856,14 +854,12 @@ function HeroV3({ tweaks, setTweak }) {
                 if (!lift) return;
                 lift.classList.add("is-lifted");
                 gsap.to(lift, { y: -4, duration: 0.32, ease: "power3.out", overwrite: "auto" });
-                if (window.fxMotionBlur) window.fxMotionBlur(lift, { k: 1.3, max: 8 });
               }}
               onMouseLeave={() => {
                 const lift = bookCardRef.current;
                 if (!lift) return;
                 lift.classList.remove("is-lifted");
                 gsap.to(lift, { y: 0, duration: 0.4, ease: "power3.out", overwrite: "auto" });
-                if (window.fxMotionBlur) window.fxMotionBlur(lift, { k: 1.3, max: 8 });
               }}>
 
             <img
