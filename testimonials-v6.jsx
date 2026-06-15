@@ -116,10 +116,10 @@ const TM_CSS = `
   .tm-h2 {
     margin: 0;
     font-family: var(--font-serif);   /* Fraunces — same as .sw-h2 */
-    font-weight: 700;
+    font-weight: 600;
     font-size: clamp(28px, 3vw, 44px);
-    line-height: 1.12;
-    letter-spacing: -0.02em;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     color: var(--flicker-canvas);
     text-wrap: balance;
   }
@@ -164,10 +164,10 @@ const TM_CSS = `
   .tm-quote {
     margin: 0;
     font-family: var(--font-serif);   /* Fraunces */
-    font-weight: 700;
+    font-weight: 600;
     font-size: clamp(18px, 1.4vw, 22px);
-    line-height: 1.45;
-    letter-spacing: -0.01em;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     color: var(--flicker-body);
     text-wrap: pretty;
   }
@@ -362,7 +362,7 @@ function Testimonials() {
     return parts.map((w, k) => {
       const idx = hIdx++;
       return (
-        <span key={idx} className="tm-word" ref={(el) => {if (el) headWordRefs.current[idx] = el;}} style={{ fontWeight: "700" }}>
+        <span key={idx} className="tm-word" ref={(el) => {if (el) headWordRefs.current[idx] = el;}} style={{ fontWeight: "600" }}>
           {w}{k < parts.length - 1 ? " " : ""}
         </span>);
 

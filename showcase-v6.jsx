@@ -409,7 +409,7 @@ function SubjectShowcase() {
     return parts.map((w, k) => {
       const idx = hIdx++;
       return (
-        <span key={idx} className="sw-word" ref={(el) => {if (el) headWordRefs.current[idx] = el;}} style={{ letterSpacing: "-0.02em", fontWeight: "700" }}>
+        <span key={idx} className="sw-word" ref={(el) => {if (el) headWordRefs.current[idx] = el;}} style={{ letterSpacing: "-0.03em", fontWeight: "600" }}>
           {w}{k < parts.length - 1 ? " " : ""}
         </span>);
 

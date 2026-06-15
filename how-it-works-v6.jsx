@@ -433,7 +433,7 @@ function HowItWorks() {
 
         {/* Heading (genre-scrub phase, top-left) */}
         <div ref={headingRef} className="hiw-heading">
-          <p className="t-h1" style={{ fontFamily: "var(--font-serif)", letterSpacing: "-0.02em" }}>{renderHeadWords("Three steps from a great book to a clear insight you can use today.")}</p>
+          <p className="t-h1" style={{ fontFamily: "var(--font-serif)", letterSpacing: "-0.03em" }}>{renderHeadWords("Three steps from a great book to a clear insight you can use today.")}</p>
         </div>
 
         {/* Genre rows (full-bleed, behind the box) */}
@@ -466,7 +466,7 @@ function HowItWorks() {
                 {BEATS.map((b, i) =>
                 <div key={i} ref={railBeatRefs[i]} className="rail-beat" style={{ opacity: i === 0 ? 1 : 0 }}>
                     <p className="rail-step" style={{ fontSize: "14px" }}>{b.step}</p>
-                    <p className="rail-title" style={{ fontFamily: "var(--font-serif)", fontWeight: "700", letterSpacing: "-0.04em", fontSize: "21px" }}>{b.title}</p>
+                    <p className="rail-title" style={{ fontFamily: "var(--font-serif)", fontWeight: "600", letterSpacing: "-0.03em", fontSize: "21px" }}>{b.title}</p>
                   </div>
                 )}
               </div>

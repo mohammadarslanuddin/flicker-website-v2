@@ -62,10 +62,10 @@ const FOOTER_CSS = `
   .site-footer .footer-heading {
     margin: clamp(44px, 5.5vw, 84px) 0 0;
     font-family: var(--f-serif);
-    font-weight: 700;
+    font-weight: 600;
     font-size: clamp(3.25rem, 12.5vw, 10rem);
-    line-height: 1.12;
-    letter-spacing: -0.02em;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     color: var(--ink);
     text-align: center;
     text-wrap: balance;
@@ -267,7 +267,7 @@ function SiteFooter() {
             {/* Top CTA */}
             <div className="footer-cta">
               <p className="footer-eyebrow eyebrow">Join a growing library of<br />the world’s best ideas</p>
-              <h2 className="footer-heading" style={{ fontSize: "63px", fontFamily: 'var(--font-serif)', color: "rgb(82, 28, 31)", letterSpacing: "-0.02em", lineHeight: "0.95" }}>
+              <h2 className="footer-heading" style={{ fontSize: "63px", fontFamily: 'var(--font-serif)', color: "rgb(82, 28, 31)", letterSpacing: "-0.03em", lineHeight: "0.9" }}>
                 <div><span style={{ color: "rgb(201, 26, 58)", fontSize: "63px" }}>One Idea, Every Week</span></div>
                 <div style={{ fontSize: "63px" }}>Habit-framed.</div>
               </h2>

@@ -162,34 +162,34 @@
 .t-display {
   font-family: var(--font-serif-display);
   font-size: clamp(2.5rem, 6vw, 5rem);
-  line-height: 1.02;
-  font-weight: 700;
-  letter-spacing: -0.02em;  /* -2% tracking — larger headings & titles */
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   color: var(--flicker-body);
 }
 
 .t-h1 {
   font-family: var(--font-serif);
   font-size: var(--text-5xl);
-  line-height: 1.08;
-  font-weight: 700;
-  letter-spacing: -0.02em;   /* -2% — larger heading */
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .t-h2 {
   font-family: var(--font-serif);
   font-size: var(--text-4xl);
-  line-height: 1.1;
-  font-weight: 700;
-  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .t-h3 {
   font-family: var(--font-serif);
   font-size: var(--text-2xl);
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .t-eyebrow {
@@ -236,8 +236,9 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: var(--text-2xl);
-  line-height: 1.35;
-  font-weight: 700;
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 /* -------------------------------------------------------------
@@ -286,13 +287,11 @@
   background: var(--flicker-canvas);
   color: var(--flicker-body);
   font-family: var(--font-sans);
-  /* Let Fraunces' optical-size axis track the rendered size so large display
-     type picks up the high-contrast display cut automatically. */
-  font-optical-sizing: auto;
-  /* Fraunces brand cut: SOFT axis pinned to 69 (softer terminals), applied
-     globally. Inherited by all text; fonts without a SOFT axis (Outfit,
-     Phosphor) ignore it. opsz still auto-sizes because no opsz is pinned here. */
-  font-variation-settings: "SOFT" 69;
+  /* Fraunces brand cut, applied globally and inherited by all text (fonts
+     without these axes — Outfit, Phosphor — simply ignore them): optical size
+     pinned to 96, SOFT 69 (soft terminals), WONK 1 (wonky alternates). opsz is
+     fixed here, so font-optical-sizing is intentionally omitted. */
+  font-variation-settings: "opsz" 96, "SOFT" 69, "WONK" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -18,7 +18,6 @@ const { useRef, useEffect, useState } = React;
 const MENU_ITEMS = [
 { label: "Home", target: '[data-screen-label="01 Hero"]' },
 { label: "How it works", target: '[data-screen-label="02 How it works"]' },
-{ label: "Summaries", target: '[data-screen-label="03 Summaries"]' },
 { label: "Why Flicker App", target: '[data-screen-label="05 Growing"]' },
 { label: "Blogs", target: '[data-screen-label="06 Listen"]' }];
 

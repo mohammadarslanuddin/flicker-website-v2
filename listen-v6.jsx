@@ -211,7 +211,7 @@ function Listen({ children }) {
         <img className="ln-icon-img" src="flicker/audio-icon-container.svg" alt="" aria-hidden="true" width="68" height="68" />
 
         {/* Headline */}
-        <h2 className="ln-headline" style={{ fontWeight: "700", letterSpacing: "-0.02em", fontSize: "42px" }}>One click away from<br />your first listen.</h2>
+        <h2 className="ln-headline" style={{ fontWeight: "600", letterSpacing: "-0.03em", fontSize: "42px" }}>One click away from<br />your first listen.</h2>
 
         {/* Inner card */}
         <div className="ln-inner">
@@ -221,7 +221,7 @@ function Listen({ children }) {
               <img src="books/10.png" alt="The Courage to Be Disliked" />
             </div>
             <div className="ln-text" ref={textRef}>
-              <h3 className="ln-title" style={{ color: "rgb(33, 25, 27)", fontWeight: "700", letterSpacing: "-0.04em", fontSize: "22px" }}>The Courage to Be Disliked</h3>
+              <h3 className="ln-title" style={{ color: "rgb(33, 25, 27)", fontWeight: "600", letterSpacing: "-0.03em", fontSize: "22px" }}>The Courage to Be Disliked</h3>
               <p className="ln-desc" style={{ fontSize: "16px" }}>An Adlerian dialogue on letting go of other people&rsquo;s approval, and finding the freedom to live life on your own terms, starting today.</p>
               <div className="ln-meta" data-comment-anchor="4f02e4b7a3-div-66-15">
                 <div className="ln-meta-item">

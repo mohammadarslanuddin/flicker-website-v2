@@ -735,10 +735,10 @@ function HeroV3({ tweaks, setTweak }) {
             style={{
               margin: 0,
               fontFamily: "var(--font-serif-display)",
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: "clamp(48px, 8vw, 132px)",
-              lineHeight: 1,
-              letterSpacing: "-0.02em",
+              lineHeight: 0.9,
+              letterSpacing: "-0.03em",
               color: "var(--ink)",
               maxWidth: 1200,
               textWrap: "balance"
@@ -749,7 +749,7 @@ function HeroV3({ tweaks, setTweak }) {
               className="headline-roll"
               style={{
                 display: "block",
-                fontWeight: 700, fontFamily: "var(--font-serif-display)"
+                fontWeight: 600, fontFamily: "var(--font-serif-display)"
               }}>
             
             Grow Smarter,
@@ -759,7 +759,7 @@ function HeroV3({ tweaks, setTweak }) {
                 display: "block",
                 fontStyle: "italic",
 
-                color: "var(--brick)", lineHeight: 1, fontWeight: "700", fontSize: "clamp(48px, 8vw, 132px)", fontFamily: "var(--font-serif-display)"
+                color: "var(--brick)", lineHeight: 0.9, fontWeight: "600", fontSize: "clamp(48px, 8vw, 132px)", fontFamily: "var(--font-serif-display)"
               }}>in minutes.
 
 
@@ -985,7 +985,7 @@ function AfterHeroV3() {
           maxWidth: 920,
           color: "var(--ink)",
           textWrap: "pretty",
-          fontWeight: 700
+          fontWeight: 600
         }}>
         
         Every Flicker is a 15-minute distillation written by editors, not

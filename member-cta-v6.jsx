@@ -38,16 +38,16 @@ const MEMBER_CTA_CSS = `
   .mcta-heading {
     margin: 0;
     font-family: var(--font-serif);
-    font-weight: 700;
+    font-weight: 600;
     font-size: 65px;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
     text-align: center;
     text-wrap: balance;
     color: #FFF9EC;
   }
   .mcta-heading .dim { color: rgba(255, 249, 236, 0.45); }
-  .mcta-heading strong { font-weight: 700; }
+  .mcta-heading strong { font-weight: 600; }
 
   /* ---- Pill buttons — small uppercase labels, arrow accent ---- */
   .mcta-btn {
