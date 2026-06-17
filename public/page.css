@@ -143,15 +143,15 @@
      dominates. */
   .book-card-wrap {
     position: absolute;
-    /* Scaled to 0.9375x via zoom (0.75x scaled up by 1.25) — zoom (not transform)
+    /* Scaled to 1.125x via zoom (0.9375 × 1.2) — zoom (not transform)
        so it doesn't fight the GSAP entrance / hover-lift / scroll-fade
        transforms on the inner elements. */
-    zoom: 0.9375;
+    zoom: 1.125;
     /* Anchored bottom-left, sitting just ABOVE the "2,300+ titles" tagline and
        left-aligned to it. left/bottom are pre-divided by the zoom so the card's
        visual edges hold (24px gutter, ~60px up) as the zoom changes. */
-    left: 25.6px;
-    bottom: 64px;
+    left: 21.333px;
+    bottom: 53.333px;
     z-index: 26;
     width: 296px;
     max-width: calc(100vw - 72px);
