@@ -1,8 +1,21 @@
-/* global React, ReactDOM, HeroV3, HowItWorks, SubjectShowcase, Growing, Listen, MemberCTA, Testimonials, FaqSection, SiteFooter,
-   TweaksPanel, TweakSection, TweakRadio, TweakToggle, TweakSlider, TweakSelect, useTweaks,
-   gsap, ScrollTrigger, ScrollSmoother, Flip */
+"use client";
+import React from "react";
+import { SiteNav } from "./site-nav";
+import { HeroV3 } from "./hero-v6";
+import { HowItWorks } from "./how-it-works-v6";
+import { SubjectShowcase } from "./showcase-v6";
+import { Growing } from "./growing-v6";
+import { Listen } from "./listen-v6";
+import { MemberCTA } from "./member-cta-v6";
+import { Testimonials } from "./testimonials-v6";
+import { FaqSection } from "./faq-v6";
+import { SiteFooter } from "./footer-v6";
+import { useTweaks } from "./tweaks-panel-v6";
 
-// Register plugins once at module load. Babel runs scripts in source order, so
+/* global gsap, ScrollTrigger, ScrollSmoother, Flip */
+
+// Register plugins once at module load. The vendored GSAP scripts are loaded
+// (next/script, beforeInteractive) before this client-only module evaluates, so
 // gsap + ScrollTrigger + ScrollSmoother are already attached to window by now.
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Flip);
 
@@ -66,7 +79,7 @@ const DEFAULTS = (() => {
   }
 })();
 
-function App() {
+export default function App() {
   const [tweaks, setTweak] = useTweaks(DEFAULTS);
 
   React.useEffect(() => { applyTone(tweaks.tone); }, [tweaks.tone]);
@@ -182,5 +195,3 @@ function App() {
     </>
   );
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);

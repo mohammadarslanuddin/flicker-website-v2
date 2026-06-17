@@ -1,4 +1,7 @@
-/* global React, gsap */
+"use client";
+import React from "react";
+
+/* global gsap */
 const { useRef, useEffect, useState } = React;
 
 /* ------------------------------------------------------------------ */
@@ -114,7 +117,7 @@ const HERO_BG_OPTS = [
 /* ------------------------------------------------------------------ */
 /*  Hero — auto-animated canvas flythrough of book covers.            */
 /* ------------------------------------------------------------------ */
-function HeroV3({ tweaks, setTweak }) {
+export function HeroV3({ tweaks, setTweak }) {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
   const heroFrameRef = useRef(null); // morphing card frame — wraps all hero content
@@ -901,7 +904,6 @@ function HeroV3({ tweaks, setTweak }) {
           </button>
         </div>
       </div>
-        }
       }
 
       {/* ---------- Bottom-right scroll indicator (replaces pause button) -- */}

@@ -1,4 +1,8 @@
-/* global React, ReactDOM, gsap, ScrollSmoother, ScrollTrigger */
+"use client";
+import React from "react";
+import { createPortal } from "react-dom";
+
+/* global gsap, ScrollSmoother, ScrollTrigger */
 /* =====================================================================
    Flicker — top bar (logo + icon-only hamburger) + compact DROP-DOWN menu
    + custom cursor.
@@ -285,7 +289,7 @@ const NAV_STYLE = `
   html.flk-cursor-on [data-omelette-chrome] *{ cursor:auto !important; }
 `;
 
-function SiteNav() {
+export function SiteNav() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [docked, setDocked] = useState(false);
@@ -716,7 +720,7 @@ function SiteNav() {
 
   if (!host) return null;
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <React.Fragment>
       <style>{NAV_STYLE}</style>
 

@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger */
 const { useRef, useEffect } = React;
 
 /* ==================================================================== *
@@ -126,7 +129,7 @@ function dominantTint(img) {
   }
 }
 
-function SubjectShowcase() {
+export function SubjectShowcase() {
   const sectionRef = useRef(null);
   const pinRef = useRef(null);
   const headRef = useRef(null);
@@ -211,12 +214,14 @@ function SubjectShowcase() {
         end: "bottom top",
         scrub: 1,
         onUpdate: (self) => {
-          const e = self.progress;
+          // Fade (+blur) the pinned carousel fully out by the HALFWAY point of the
+          // exit scroll, so it has cleared before Growing rises into the same
+          // space — no two-section overlap during the seam.
+          const f = clamp01(self.progress / 0.5);
           if (pinRef.current) {
-            pinRef.current.style.opacity = String(1 - e);
-            // Blur ramps 0 -> 20px only across the second half of the fade.
-            const b = e > 0.5 ? (e - 0.5) / 0.5 * 20 : 0;
-            pinRef.current.style.filter = b > 0 ? `blur(${b}px)` : "none";
+            pinRef.current.style.opacity = String(1 - f);
+            const b = f * 18;
+            pinRef.current.style.filter = b > 0.3 ? `blur(${b}px)` : "none";
           }
         }
       });

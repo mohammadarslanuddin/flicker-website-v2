@@ -1,4 +1,6 @@
-/* global React */
+"use client";
+import React from "react";
+
 /* =====================================================================
    Flicker — site footer (ported from Footer v2.html).
    Rendered directly inside <Listen>'s black container (.ln-belly) — the
@@ -257,7 +259,7 @@ const Tri = () =>
   </svg>;
 
 
-function SiteFooter() {
+export function SiteFooter() {
   return (
     <React.Fragment>
       <style>{FOOTER_CSS}</style>

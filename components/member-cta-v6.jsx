@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger */
 const { useRef: useMctaRef, useEffect: useMctaEffect } = React;
 
 /* =====================================================================
@@ -179,7 +182,7 @@ const MEMBER_CTA_CSS = `
   }
 `;
 
-function MemberCTA() {
+export function MemberCTA() {
   const topRef = useMctaRef(null);
   const cardRef = useMctaRef(null);
 

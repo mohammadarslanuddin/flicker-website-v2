@@ -3,3 +3,9 @@
 
 # Local-only Claude Code settings
 .claude/settings.local.json
+
+# Next.js / Node
+node_modules/
+.next/
+next-env.d.ts
+npm-debug.log*

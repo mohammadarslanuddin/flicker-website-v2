@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger */
 const { useRef: useTmRef, useEffect: useTmEffect } = React;
 
 /* =====================================================================
@@ -226,7 +229,7 @@ const TM_CSS = `
   }
 `;
 
-function Testimonials() {
+export function Testimonials() {
   const sectionRef = useTmRef(null);
   const pinRef = useTmRef(null);
   const lineRefs = useTmRef([]); // line1, line2, sub — pre-pin fade-in blocks

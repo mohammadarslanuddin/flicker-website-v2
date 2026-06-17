@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger */
 const { useRef, useEffect } = React;
 
 /* ==================================================================== *
@@ -10,7 +13,7 @@ const { useRef, useEffect } = React;
  *  real audio stream later. The panel keeps its scroll fade-in entrance. *
  * ==================================================================== */
 
-function Listen({ children }) {
+export function Listen({ children }) {
   const sectionRef = useRef(null);
   const stageRef = useRef(null);
   const panelRef = useRef(null);

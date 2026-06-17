@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger, lottie */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger, lottie */
 const { useRef, useEffect } = React;
 
 /* ==================================================================== *
@@ -64,7 +67,7 @@ function fillWords(text) {
   );
 }
 
-function Growing() {
+export function Growing() {
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -82,9 +85,12 @@ function Growing() {
     const loadLottie = (holder) => {
       if (typeof lottie === "undefined" || holder.__anim) return null;
       const a = lottie.loadAnimation({
-        container: holder, renderer: "canvas", loop: false, autoplay: false,
+        // SVG renderer (not canvas): these bento animations use mattes/masks the
+        // lottie canvas renderer can't paint — it advances frames but draws
+        // nothing (blank cards). SVG renders them correctly, matching how-it-works.
+        container: holder, renderer: "svg", loop: false, autoplay: false,
         path: holder.dataset.lottie,
-        rendererSettings: { progressiveLoad: true, preserveAspectRatio: "xMidYMid meet" }
+        rendererSettings: { progressiveLoad: false, preserveAspectRatio: "xMidYMid meet" }
       });
       holder.__anim = a;
       anims.push(a);

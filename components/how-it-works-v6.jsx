@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger, lottie */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger, lottie */
 const { useRef, useEffect } = React;
 
 /* ==================================================================== *
@@ -87,7 +90,7 @@ function beatVis(i, sf) {
   return o;
 }
 
-function HowItWorks() {
+export function HowItWorks() {
   const sectionRef = useRef(null);
   const pinRef = useRef(null);
   const headingRef = useRef(null);
@@ -353,11 +356,14 @@ function HowItWorks() {
         end: "bottom top",
         scrub: 1,
         onUpdate: (self) => {
-          const e = self.progress;
+          // Fade (+blur) the pinned panel fully out by the HALFWAY point of the
+          // exit scroll, so it has cleared before the next section rises into the
+          // same space — no two-section overlap during the seam.
+          const f = clamp01(self.progress / 0.5);
           if (pinRef.current) {
-            pinRef.current.style.opacity = String(1 - e);
-            const b = e > 0.5 ? (e - 0.5) / 0.5 * 20 : 0;
-            pinRef.current.style.filter = b > 0 ? `blur(${b}px)` : "none";
+            pinRef.current.style.opacity = String(1 - f);
+            const b = f * 18;
+            pinRef.current.style.filter = b > 0.3 ? `blur(${b}px)` : "none";
           }
         }
       });

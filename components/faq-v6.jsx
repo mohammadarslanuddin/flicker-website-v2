@@ -1,4 +1,7 @@
-/* global React, gsap, ScrollTrigger */
+"use client";
+import React from "react";
+
+/* global gsap, ScrollTrigger */
 const { useRef: useFaqRef, useEffect: useFaqEffect, useState: useFaqState } = React;
 
 /* =====================================================================
@@ -162,7 +165,7 @@ const FAQ_CSS = `
   }
 `;
 
-function FaqSection() {
+export function FaqSection() {
   const sectionRef = useFaqRef(null);
   const answerRefs = useFaqRef([]);
   const headWordRefs = useFaqRef([]);
