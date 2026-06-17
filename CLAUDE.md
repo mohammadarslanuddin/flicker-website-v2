@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Hard rules (must follow)
+
+- **Never create a git branch on your own.** Do not run `git branch`, `git checkout -b`,
+  `git switch -c`, `git worktree add`, or any command that creates a branch. If a task would
+  benefit from a new branch, **stop and tell the owner to create it manually**, name the exact
+  branch you'd want, explain why, and **wait for their next reply** before continuing. This is
+  intentional so the owner always knows what is happening — surface the request clearly and do
+  not bury it inside a long response.
+
 ## What this is
 
 A single static **Home** page for Flicker (an AI book-summaries app), ported from a
