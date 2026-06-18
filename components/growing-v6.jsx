@@ -80,6 +80,7 @@ export function Growing() {
     const anims = [];
     let ctx;
     let refreshHandler = null;
+    let lottieReadyTimer = null;
 
     // ---- Lottie: load each imagery cell paused; (re)play on card reveal. ----
     const loadLottie = (holder) => {
@@ -104,7 +105,29 @@ export function Growing() {
       ctx = gsap.context((self) => {
         const q = (s) => self.selector(s);
         const holders = q(".gw-lottie");
-        holders.forEach(loadLottie);
+
+        // Create the Lottie animations as soon as the vendored `lottie` global
+        // exists. On a COLD first load (slow network / fresh deploy) the
+        // 305 KB lottie.min.js can finish AFTER document.fonts.ready — i.e.
+        // after build() runs — so we must not bail permanently when it's
+        // missing. Poll until it appears, then load; otherwise every card
+        // stays blank on the very first visit (warm reloads only worked
+        // because the global was already cached). Cards revealed regardless
+        // because that path needs only gsap/ScrollTrigger, which load earlier.
+        const loadAllLotties = () => {
+          if (typeof lottie === "undefined") return false;
+          holders.forEach(loadLottie);
+          return true;
+        };
+        if (!loadAllLotties()) {
+          let tries = 0;
+          lottieReadyTimer = setInterval(() => {
+            if (loadAllLotties() || ++tries > 150) { // ~9s safety cap
+              clearInterval(lottieReadyTimer);
+              lottieReadyTimer = null;
+            }
+          }, 60);
+        }
 
         // Reduced motion: show everything, play Lotties, no scroll motion.
         if (reduce) {
@@ -179,16 +202,20 @@ export function Growing() {
           scrollTrigger: { trigger: group, start: "top top", end: "top -45%", scrub: 1 }
         });
 
-        /* ============ CARDS — position-reliable reveal ====================
-           Driven by discrete enter/leave callbacks (live scroll) PLUS a
-           reconcile that runs on every ScrollTrigger refresh and on init,
-           using each card's real getBoundingClientRect. A card is shown at
-           FULL opacity whenever any part of it is in the viewport, and only
-           fades out once it has scrolled above the top — so a reflow, a
-           Tweaks change, or loading already-scrolled never leaves an on-screen
-           card stuck hidden (the scrub approach did). It fades + blurs in and
-           out the same way. Lotties (re)start whenever a card enters. */
-        const reconcilers = [];
+        /* ============ CARDS — geometry-true reveal ========================
+           Each card's shown/hidden state is decided ONLY from its real
+           getBoundingClientRect, re-evaluated on every scroll frame (via a
+           section-spanning ScrollTrigger onUpdate) plus on refresh and init.
+           A `shown` guard makes the blur-in timeline play (and the Lottie
+           restart) exactly once per transition, so the reveal still animates
+           but a card can never get stuck hidden while it is on screen.
+
+           This replaces the earlier per-card enter/leave triggers: those had
+           their start/end measured against a layout that the pinned header's
+           pin-spacer shifts, so the TOPMOST card in a column was sent
+           onLeave -> hide() (opacity 0 + Lottie reset to blank frame 0) while
+           it was still visibly on screen, and nothing healed it mid-scroll. */
+        const evaluators = [];
         q(".gw-card").forEach((card) => {
           const media = card.querySelector(".gw-media");
           const rw = card.querySelectorAll(".gw-rw");
@@ -209,35 +236,40 @@ export function Growing() {
 
           gsap.set(card, { opacity: 0 });
 
-          const show = () => {tlIn.play();if (holder) playLottie(holder);};
-          const hide = () => {tlIn.reverse();if (holder) stopLottie(holder);};
+          let shown = false;
+          const show = () => {if (shown) return;shown = true;tlIn.play();if (holder) playLottie(holder);};
+          const hide = () => {if (!shown) return;shown = false;tlIn.reverse();if (holder) stopLottie(holder);};
 
-          ScrollTrigger.create({
-            trigger: card, start: "top 88%", end: "bottom 12%",
-            onEnter: show, onEnterBack: show,
-            onLeave: hide, onLeaveBack: hide
-          });
-
-          // Reconcile from the real rect — robust to refresh / load-while-scrolled.
-          reconcilers.push(() => {
+          // Truth = the card's real on-screen rect (already reflects the
+          // ScrollSmoother transform), so missed/mis-timed triggers can't
+          // strand it. Shown whenever any meaningful part is in the viewport.
+          evaluators.push(() => {
             const r = card.getBoundingClientRect();
             const vh = window.innerHeight;
             const inView = r.top < vh * 0.9 && r.bottom > vh * 0.1;
-            if (inView) {tlIn.progress(1).pause();if (holder) playLottie(holder);} else
-            {tlIn.progress(0).pause();if (holder) stopLottie(holder);}
+            if (inView) show();else hide();
           });
         });
-        const runReconcile = () => reconcilers.forEach((fn) => fn());
-        // Run across a few frames so it lands AFTER ScrollSmoother applies its
-        // transform (a single rAF can read a stale rect on large jumps).
-        const reconcileSoon = () => {
-          requestAnimationFrame(runReconcile);
-          setTimeout(runReconcile, 80);
-          setTimeout(runReconcile, 260);
+        const evalAll = () => evaluators.forEach((fn) => fn());
+
+        // Re-evaluate every scroll frame while the section overlaps the
+        // viewport — this is what makes the reveal position-reliable.
+        ScrollTrigger.create({
+          trigger: section, start: "top bottom", end: "bottom top",
+          onUpdate: evalAll, onToggle: evalAll
+        });
+
+        // Also run across a few frames after a refresh so it lands AFTER
+        // ScrollSmoother applies its transform (a single rAF can read a stale
+        // rect on large jumps / load-while-already-scrolled).
+        const evalSoon = () => {
+          requestAnimationFrame(evalAll);
+          setTimeout(evalAll, 80);
+          setTimeout(evalAll, 260);
         };
-        refreshHandler = reconcileSoon;
+        refreshHandler = evalSoon;
         ScrollTrigger.addEventListener("refresh", refreshHandler);
-        reconcileSoon();
+        evalSoon();
 
         if (window.lucide) window.lucide.createIcons();
       }, section);
@@ -250,6 +282,7 @@ export function Growing() {
 
     return () => {
       killed = true;
+      if (lottieReadyTimer) clearInterval(lottieReadyTimer);
       if (refreshHandler) ScrollTrigger.removeEventListener("refresh", refreshHandler);
       anims.forEach((a) => a && a.destroy && a.destroy());
       if (ctx) ctx.revert();

@@ -531,14 +531,18 @@ export function SiteNav() {
       const pr = Math.round(p);
       if (pr !== progRef.current) {progRef.current = pr;setProgress(pr);}
 
-      // --- Dock reveal: anywhere past the hero, whenever the user scrolls UP ---
+      // --- Dock reveal / bar hide threshold ---
+      // Fire once the hero is ≥80% SCROLLED (its top has travelled up past 80%
+      // of its own height), not only when it has almost fully left the screen.
+      // Measured from the hero's own rect so it holds for any hero height.
       const hero = heroElRef.current ||
       (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
       const pastHero = hero ?
-      hero.getBoundingClientRect().bottom <= 80 :
-      y > window.innerHeight * 0.85;
+      (() => {const r = hero.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.8;})() :
+      y > window.innerHeight * 0.8;
 
-      // The top bar lives only in the hero zone; it hides once we're past it.
+      // The top bar lives only in the hero zone; it hides (current GSAP slide-up
+      // + fade) the instant the hero passes 80% scrolled.
       if (pastHero !== barHiddenRef.current) {barHiddenRef.current = pastHero;setHidden(pastHero);}
 
       // Direction: trust the actual (smoothed) scroll-position delta first.
