@@ -83,7 +83,17 @@ function beatVis(i, sf) {
 
 const CSS = `
   .hsq { position: relative; background: var(--bg); }
-  .hsq-pin { position: relative; height: 100vh; overflow: hidden; will-change: opacity, filter; }
+  /* --hsq-pad is the single source of truth for the How-it-works section's
+     horizontal rhythm: it sets both the outer side padding AND the gap
+     between the left/right content and the centered phone. --hsq-phone-half
+     is updated by JS to match the live phone width so the gap stays
+     symmetric regardless of viewport. */
+  .hsq-pin {
+    position: relative; height: 100vh; overflow: hidden; will-change: opacity, filter;
+    --hsq-pad: clamp(24px, 4vw, 72px);
+    --hsq-phone-half: 150px;
+    --hsq-panel-inset: 40px;
+  }
 
   /* Rounded container — JS-driven rect; morphs hero-panel → how-it-works card. */
   .hsq-panel {
@@ -101,19 +111,19 @@ const CSS = `
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
-    display: flex; flex-direction: column; align-items: center; gap: 40px;
+    display: flex; flex-direction: column; align-items: center; gap: 2rem;
     width: 100%; padding: 0 24px; text-align: center;
     will-change: opacity, transform;
   }
-  .hsq-head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .hsq-head { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
   .hsq-title {
     margin: 0; display: flex; flex-direction: column; align-items: center;
     font-family: var(--font-serif-display, var(--font-serif));
-    font-weight: 600; font-size: clamp(54px, 6.7vw, 96px); line-height: 1.0;
+    font-weight: 600; font-size: clamp(54px, 6.7vw, 96px); line-height: 0.85;
     white-space: nowrap; font-variation-settings: "SOFT" 100, "WONK" 1;
   }
   .hsq-title-a { color: var(--ink, #22191b); letter-spacing: -0.025em; }
-  .hsq-title-b { color: var(--flicker-brick, #c13441); letter-spacing: -0.03em; margin-top: -0.385em; }
+  .hsq-title-b { color: var(--flicker-brick, #c13441); letter-spacing: -0.03em; }
   .hsq-sub {
     margin: 0; max-width: 669px; font-family: var(--font-sans); font-weight: 400;
     font-size: clamp(17px, 1.4vw, 20px); line-height: 1.35; color: var(--ink-soft, #3d3034); text-wrap: pretty;
@@ -133,23 +143,42 @@ const CSS = `
     z-index: 3; overflow: hidden; border-radius: 13.2% / 6.4%;
     background: var(--flicker-brick, #c13441);
   }
-  .hsq-splash { position: absolute; inset: 0; z-index: 2; will-change: opacity; }
+  .hsq-splash {
+    position: absolute; inset: 0; z-index: 2;
+    background: var(--flicker-brick, #c13441);
+    will-change: opacity;
+  }
+  /* Dynamic island — sits above splash AND the sliding app surface so it
+     always reads as part of the device hardware, never moves, and overlaps
+     whatever screen is animating behind it. Sized + positioned so it
+     covers the camera/status-bar artwork at the top of the lottie app
+     screens once they slide into view. */
   .hsq-island {
-    position: absolute; top: 3.3%; left: 50%; transform: translateX(-50%);
-    width: 29%; aspect-ratio: 3.37 / 1; background: #030303; border-radius: 999px; z-index: 3;
+    position: absolute; top: 1.6%; left: 50%; transform: translateX(-50%);
+    width: 31%; aspect-ratio: 3.05 / 1; background: #030303; border-radius: 999px;
+    z-index: 10;
   }
   .hsq-logo {
     position: absolute; top: 25.7%; left: 50%; transform: translateX(-50%);
     width: 18.7%; color: var(--flicker-canvas, #fff9ec);
   }
-  .hsq-lotties { position: absolute; inset: 0; z-index: 4; background: #FFF8F6; will-change: opacity; }
+  .hsq-lotties {
+    position: absolute; inset: 0; z-index: 4; background: #FFF8F6;
+    transform-origin: 50% 100%;
+    will-change: opacity, transform;
+  }
   .hsq-lottie { position: absolute; inset: 0; will-change: opacity; }
   .hsq-lottie svg, .hsq-lottie canvas { display: block; width: 100% !important; height: 100% !important; }
 
   /* ---- How-it-works copy (left) + step rail (right) — fade in on morph ---- */
+  /* Both columns sit INSIDE the rounded panel, with the SAME padding from
+     the panel's inner edge AND the SAME gap to the phone. The panel inset
+     and phone half-width are live values driven by JS so the layout stays
+     symmetric across viewports. */
   .hsq-copy {
-    position: absolute; left: clamp(20px, 13vw, 250px); top: 50%;
-    width: clamp(170px, 17vw, 300px); transform: translateY(-50%);
+    position: absolute; top: 50%; transform: translateY(-50%);
+    left: calc(var(--hsq-panel-inset) + var(--hsq-pad));
+    right: calc(50% + var(--hsq-phone-half) + var(--hsq-pad));
     z-index: 14; will-change: opacity;
   }
   .hsq-copy-beat {
@@ -161,8 +190,9 @@ const CSS = `
   .hsq-word { color: #BCB4AD; }
 
   .hsq-rail {
-    position: absolute; left: 63.5%; top: 50%;
-    width: clamp(170px, 17vw, 300px); transform: translateY(-50%);
+    position: absolute; top: 50%; transform: translateY(-50%);
+    left: calc(50% + var(--hsq-phone-half) + var(--hsq-pad));
+    right: calc(var(--hsq-panel-inset) + var(--hsq-pad));
     z-index: 14; display: flex; align-items: center; gap: 24px; will-change: opacity;
   }
   .hsq-rail-track { position: relative; flex: 0 0 auto; width: 2px; height: 52px; border-radius: 2px; background: rgba(34,25,27,0.16); overflow: hidden; }
@@ -252,6 +282,14 @@ export function HeroSequenceV7() {
       const ipW = ipH / PHONE_AR;
       const hiwPhone = { l: VW / 2 - ipW / 2, tp: VH / 2 - ipH / 2, w: ipW, h: ipH };
 
+      // Expose the live phone half-width AND the panel's inner edge inset
+      // so the left/right columns can stay symmetric, with padding measured
+      // from inside the rounded panel (NOT the viewport edge).
+      if (pinRef.current) {
+        pinRef.current.style.setProperty("--hsq-phone-half", (ipW / 2) + "px");
+        pinRef.current.style.setProperty("--hsq-panel-inset", hiwMH + "px");
+      }
+
       return { heroPanel, heroPhone, hiwPanel, hiwPhone };
     };
 
@@ -283,8 +321,20 @@ export function HeroSequenceV7() {
       if (statRef.current) statRef.current.style.opacity = String(chromeOp);
       if (scrollRef.current) scrollRef.current.style.opacity = String(chromeOp);
 
-      if (splashRef.current) splashRef.current.style.opacity = String(1 - clamp01(me * 1.5));
-      if (lottieWrapRef.current) lottieWrapRef.current.style.opacity = String(clamp01((me - 0.35) / 0.65));
+      // In-app screen transition: the splash holds steady (logo gently fades),
+      // while the app surface SLIDES UP from below over it — the same motion
+      // iOS uses for a presented screen. The island is a sibling at higher
+      // z-index, so it stays fixed at the top while content slides behind it.
+      if (splashRef.current) {
+        const sp = smooth(clamp01((me - 0.05) / 0.4));
+        splashRef.current.style.opacity = String(1 - sp);
+      }
+      if (lottieWrapRef.current) {
+        const lp = smooth(clamp01(me / 0.5));
+        const ty = (1 - lp) * 100;
+        lottieWrapRef.current.style.opacity = "1";
+        lottieWrapRef.current.style.transform = `translateY(${ty}%)`;
+      }
 
       const colOp = clamp01((me - 0.55) / 0.45);
       if (copyColRef.current) copyColRef.current.style.opacity = String(colOp);
@@ -420,16 +470,18 @@ export function HeroSequenceV7() {
         <div ref={phoneRef} className="hsq-phone">
           <div className="hsq-screen">
             <div ref={splashRef} className="hsq-splash">
-              <div className="hsq-island" />
               <div className="hsq-logo" dangerouslySetInnerHTML={{ __html: FLICKER_MARK }} />
             </div>
-            <div ref={lottieWrapRef} className="hsq-lotties" style={{ opacity: 0 }}>
+            <div ref={lottieWrapRef} className="hsq-lotties" style={{ opacity: 0, transform: "translateY(100%)" }}>
               {BEATS.map((b, i) =>
               <div key={i} ref={holderRefs[i]} className="hsq-lottie" role="img"
                 aria-label="A demonstration of the Flicker app reading experience"
                 style={{ opacity: i === 0 ? 1 : 0 }} />
               )}
             </div>
+            {/* Dynamic island — sibling of splash + app surface so it stays
+                fixed at the top while the app screen slides up behind it. */}
+            <div className="hsq-island" />
           </div>
           <img className="hsq-frame" src="home-v7/app-container.svg" alt="" />
         </div>

@@ -58,10 +58,10 @@ const HERO_V7_CSS = `
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 0.25em; /* visible breathing room between the two lines, per Figma */
     font-family: var(--font-serif-display, var(--font-serif));
     font-weight: 600;
     font-size: clamp(54px, 6.7vw, 96px);
-    line-height: 1.0;
     white-space: nowrap;
     font-variation-settings: "SOFT" 100, "WONK" 1;
   }
@@ -69,7 +69,6 @@ const HERO_V7_CSS = `
   .hv7-title-b {
     color: var(--flicker-brick, #c13441);
     letter-spacing: -0.03em;
-    margin-top: -0.385em;            /* mirrors the design's -37px line overlap */
   }
 
   .hv7-sub {
