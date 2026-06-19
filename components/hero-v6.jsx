@@ -218,14 +218,15 @@ export function HeroV3({ tweaks, setTweak }) {
 
   /* ---------- Lucide icon hydration ----------
      Lucide's createIcons() walks the document and replaces every
-     <i data-lucide="name"> with the matching SVG. We re-run it after each
-     render that could (re)introduce <i> elements — e.g. the book card
-     mounting/unmounting. */
+     <i data-lucide="name"> with the matching SVG. The only thing that
+     (re)introduces <i> elements here is the book card mounting/unmounting, so
+     gate on that instead of re-scanning the whole document after every render
+     (each bare-render pass otherwise scheduled + cancelled a rAF for nothing). */
   useEffect(() => {
     if (typeof window === "undefined" || !window.lucide) return;
     const id = requestAnimationFrame(() => window.lucide.createIcons());
     return () => cancelAnimationFrame(id);
-  });
+  }, [bookCardDismissed]);
 
   /* ---------- GSAP hover layer ----------
      Modern hover scale/translate on the page's primary interactives, wired
@@ -409,11 +410,22 @@ export function HeroV3({ tweaks, setTweak }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const wrap = heroFrameRef.current; // size the canvas to the (morphing) card frame
-    if (!canvas || !wrap) return;
+    // Size the canvas to the SECTION, not the morphing card frame. The frame's
+    // left/right/top/bottom are animated every scroll-morph tick; observing it
+    // would refire the ResizeObserver ~60×/s, reallocating the whole canvas
+    // backing buffer each time — the main cause of the "heavy" hero scroll.
+    // The section is a stable 100vh/100vw box, so it only changes on a real
+    // viewport resize. The canvas tracks the morphing frame purely in CSS
+    // (width/height:100% in the JSX), so the buffer never needs reallocating
+    // mid-morph — the browser just downscales it into the shrinking card.
+    const section = wrapRef.current;
+    if (!canvas || !section) return;
     const ctx = canvas.getContext("2d");
 
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Cap DPR at 1.5: this is a soft, fading, in-motion decorative layer, so
+    // 2× device pixels quadruple fill-rate for no visible gain. 1.5 keeps it
+    // crisp while cutting per-frame clear+draw cost on retina.
+    let dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     let W = 0,H = 0;
     let raf = 0;
     let cancelled = false;
@@ -423,18 +435,22 @@ export function HeroV3({ tweaks, setTweak }) {
     const cards = [];
 
     const resize = () => {
-      const r = wrap.getBoundingClientRect();
+      const r = section.getBoundingClientRect();
       W = Math.max(1, r.width);
       H = Math.max(1, r.height);
-      canvas.width = Math.round(W * dpr);
-      canvas.height = Math.round(H * dpr);
-      canvas.style.width = W + "px";
-      canvas.style.height = H + "px";
+      const bw = Math.round(W * dpr);
+      const bh = Math.round(H * dpr);
+      // Only reallocate the backing store when the section truly changed size
+      // (a viewport resize) — never during the scroll-morph.
+      if (canvas.width !== bw || canvas.height !== bh) {
+        canvas.width = bw;
+        canvas.height = bh;
+      }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     const ro = new ResizeObserver(resize);
-    ro.observe(wrap);
+    ro.observe(section);
 
     // -------------------- perspective config --------------------
     const FOCAL = tweaks.perspective === "deep" ? 700 :
@@ -520,11 +536,16 @@ export function HeroV3({ tweaks, setTweak }) {
 
       const ASPECT = 2 / 3;
 
+      // Reused across frames — sorting this persistent array in place avoids
+      // allocating a fresh array (and the GC churn) on every one of the 60
+      // render ticks per second. The card object references never change.
+      const sorted = cards.slice();
+
       const render = () => {
         ctx.clearRect(0, 0, W, H);
         const cx = W / 2;
         const cy = H / 2;
-        const sorted = cards.slice().sort((a, b) => b.z - a.z);
+        sorted.sort((a, b) => b.z - a.z);
 
         for (const c of sorted) {
           const factor = FOCAL / (FOCAL + c.z);
@@ -569,7 +590,7 @@ export function HeroV3({ tweaks, setTweak }) {
         tweens.forEach((t) => t && t.paused(!visible));
         if (visible && !raf) raf = requestAnimationFrame(render);
       }, { rootMargin: "200px" });
-      io.observe(wrap);
+      io.observe(section);
 
       raf = requestAnimationFrame(render);
     });
@@ -684,7 +705,7 @@ export function HeroV3({ tweaks, setTweak }) {
       {/* ---------- Canvas (floating book covers) ---------- */}
       <canvas
           ref={canvasRef}
-          style={{ position: "absolute", inset: 0, display: "block", zIndex: 10 }} />
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", zIndex: 10 }} />
       
 
       {/* ---------- Backdrop fog: radial canvas-color halo behind content ----
