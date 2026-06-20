@@ -59,6 +59,7 @@ const BEATS = [
 }];
 
 const PHONE_AR = 773 / 381;     // app-container.svg height / width
+const LOTTIE_STOP_SECONDS = 1.8; // each beat's Lottie plays from 0 and parks here
 const HOLD_END = 0.10;          // static hero
 const MORPH_END = 0.42;         // phone shrink + panel morph completes
 
@@ -93,6 +94,8 @@ const CSS = `
     --hsq-pad: clamp(24px, 4vw, 72px);
     --hsq-phone-half: 150px;
     --hsq-panel-inset: 40px;
+    --hsq-header-h: 96px;   /* fixed site-header height — top bound of the hero band */
+    --hsq-hero-foot: 44vh;  /* viewport→phone-top distance — bottom bound (live, set by JS) */
   }
 
   /* Rounded container — JS-driven rect; morphs hero-panel → how-it-works card. */
@@ -107,12 +110,16 @@ const CSS = `
   /* ---- Hero text (fades out during the morph) ---- */
   .hsq-hero-text {
     position: absolute;
-    top: clamp(120px, 18vh, 200px);
-    left: 50%;
-    transform: translateX(-50%);
+    /* Vertically centred in the band between the fixed header and the top of
+       the phone mockup, so the gap above and below the content stays equal at
+       any screen size. Both bounds are live: --hsq-header-h is the header
+       height, --hsq-hero-foot is the viewport→phone-top distance (set by JS). */
+    top: var(--hsq-header-h, 96px);
+    bottom: var(--hsq-hero-foot, 44vh);
+    left: 0; right: 0;
     z-index: 20;
-    display: flex; flex-direction: column; align-items: center; gap: 2rem;
-    width: 100%; padding: 0 24px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+    padding: 0 24px; text-align: center;
     will-change: opacity, transform;
   }
   .hsq-head { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
@@ -184,7 +191,7 @@ const CSS = `
   .hsq-copy-beat {
     position: absolute; top: 0; left: 0; right: 0;
     margin: 0; font-family: var(--font-sans); font-weight: 500;
-    font-size: clamp(16px, 1.25vw, 20px); line-height: 1.5; letter-spacing: -0.005em;
+    font-size: clamp(18px, 1.55vw, 25px); line-height: 1.5; letter-spacing: -0.005em;
     transform: translateY(-50%); will-change: opacity;
   }
   .hsq-word { color: #BCB4AD; }
@@ -200,7 +207,7 @@ const CSS = `
   .hsq-rail-labels { position: relative; flex: 1 1 auto; min-height: 84px; }
   .hsq-rail-beat { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); will-change: opacity; }
   .hsq-rail-step { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--flicker-ink-mute, #7a6b6f); margin: 0 0 6px 0; }
-  .hsq-rail-title { font-family: var(--font-serif-display, var(--font-serif)); font-weight: 600; font-size: clamp(22px, 1.9vw, 30px); line-height: 0.9; letter-spacing: -0.03em; color: var(--flicker-body, #22191b); margin: 0; text-wrap: balance; }
+  .hsq-rail-title { font-family: var(--font-serif-display, var(--font-serif)); font-weight: 600; font-size: clamp(17px, 1.4vw, 22px); line-height: 0.95; letter-spacing: -0.03em; color: var(--flicker-body, #22191b); margin: 0; text-wrap: balance; }
 
   /* ---- Bottom chrome (hero only; fades out during morph) ---- */
   .hsq-chrome {
@@ -225,6 +232,7 @@ export function HeroSequenceV7() {
   const panelRef = useRef(null);
   const phoneRef = useRef(null);
   const heroTextRef = useRef(null);
+  const titleRef = useRef(null); // first headline line — rotates between phrases
   const splashRef = useRef(null);
   const lottieWrapRef = useRef(null);
   const copyColRef = useRef(null);
@@ -245,8 +253,34 @@ export function HeroSequenceV7() {
 
     const anims = [null, null, null];
     const ready = [false, false, false];
-    let lastP = 0, killed = false;
+    let killed = false;
     let st = null, loadTrigger = null, exitST = null, arrowTween = null;
+
+    // ===== Discrete step machine =====
+    // The hero no longer scrubs to the scrollbar. The section is pinned and the
+    // scroll INPUT (wheel / touch / keys) is hijacked into discrete steps that
+    // fire IMMEDIATELY on the first gesture — there is no distance threshold:
+    //   step 0 — hero
+    //   step 1 — how-it-works, beat 1   (Lottie 1 plays itself)
+    //   step 2 — how-it-works, beat 2   (Lottie 2 plays itself)
+    //   step 3 — how-it-works, beat 3   (Lottie 3 plays itself)
+    // Each gesture plays the next/previous transition as a fixed, eased tween.
+    // At step 3 a further scroll-down releases the pin to the next section;
+    // scrolling back up re-arms the machine at step 3.
+    const MAX = 3;
+    let step = 0;          // current step
+    let activeBeat = -1;   // -1 = hero (no beat), else BEATS index
+    let locked = false;    // true while a step transition is playing
+    let engaged = true;    // true while the machine owns the scroll input
+    let unlockCall = null;
+    let beatTweens = [];
+
+    // ---- Morph proxies (hero 0 ⇄ how-it-works 1) ----
+    // `panel` drives the background container; `phone` trails it (see setMorph),
+    // so the two never transition on the same curve.
+    const morph = { panel: 0, phone: 0 };
+    let morphTarget = 0;
+    let panelTween = null, phoneTween = null;
 
     /* ---- Lottie (deferred so it never blocks the hero paint) ---- */
     const loadLotties = () => {
@@ -261,7 +295,13 @@ export function HeroSequenceV7() {
           path: b.path,
           rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: false }
         });
-        a.addEventListener("DOMLoaded", () => { ready[i] = true; a.goToAndStop(0, true); render(lastP); });
+        a.addEventListener("DOMLoaded", () => {
+          ready[i] = true;
+          // If this beat is the one on screen, play it (stopping at 1.80s);
+          // otherwise park it on frame 0.
+          if (i === activeBeat) playBeatLottie(i);
+          else a.goToAndStop(0, true);
+        });
         anims[i] = a;
       });
     };
@@ -275,7 +315,9 @@ export function HeroSequenceV7() {
       const heroPhone = { l: VW / 2 - hpW / 2, tp: VH * 0.56, w: hpW, h: hpW * PHONE_AR };
 
       const hiwMH = clampN(40, VW * 0.12, 240);
-      const hiwMV = clampN(28, VH * 0.06, 72);
+      // Second container's vertical gap, ×1.5 vs. the original (28/0.06/72) so
+      // the how-it-works card sits with noticeably more room top and bottom.
+      const hiwMV = clampN(42, VH * 0.09, 108);
       const hiwPanel = { l: hiwMH, tp: hiwMV, w: VW - 2 * hiwMH, h: VH - 2 * hiwMV };
 
       const ipH = Math.min(VH * 0.68, hiwPanel.h - VH * 0.10);
@@ -288,6 +330,9 @@ export function HeroSequenceV7() {
       if (pinRef.current) {
         pinRef.current.style.setProperty("--hsq-phone-half", (ipW / 2) + "px");
         pinRef.current.style.setProperty("--hsq-panel-inset", hiwMH + "px");
+        // Bottom bound of the centred hero band = distance from the viewport
+        // top down to the hero-state phone's top edge.
+        pinRef.current.style.setProperty("--hsq-hero-foot", (VH - heroPhone.tp) + "px");
       }
 
       return { heroPanel, heroPhone, hiwPanel, hiwPhone };
@@ -298,24 +343,30 @@ export function HeroSequenceV7() {
       el.style.width = r.w + "px"; el.style.height = r.h + "px";
     };
 
-    const render = (p) => {
-      lastP = p;
+    // ---- MORPH renderer ----
+    // Reads the two eased proxies directly (the power2.inOut tween already
+    // shapes the curve, so no extra smooth() is applied here). `morph.panel`
+    // drives the background container + the hero text / chrome / column fades;
+    // `morph.phone` drives the phone rect + its splash→Lottie crossfade. The
+    // two values are staggered by setMorph(), so the panel and phone never
+    // move on the same frame-curve.
+    const renderMorph = () => {
       const panel = panelRef.current, phone = phoneRef.current;
       if (!panel || !phone) return;
       const G = geom();
+      const mPanel = morph.panel;
+      const mPhone = morph.phone;
 
-      // ---- HOLD + MORPH ----
-      const me = smooth(clamp01((p - HOLD_END) / (MORPH_END - HOLD_END)));
-      setRect(panel, lerpRect(G.heroPanel, G.hiwPanel, me));
-      setRect(phone, lerpRect(G.heroPhone, G.hiwPhone, me));
+      setRect(panel, lerpRect(G.heroPanel, G.hiwPanel, mPanel));
+      setRect(phone, lerpRect(G.heroPhone, G.hiwPhone, mPhone));
 
-      // Hero content clears IMMEDIATELY when the morph begins — a quick
-      // slide-up + fade that completes within the first ~20% of the morph, so
-      // it's fully gone before the phone/panel motion plays out (no overlap).
-      const heroOut = smooth(clamp01(me / 0.2));
+      // Hero content clears as the container starts to expand — a quick
+      // slide-up + fade that completes within the first ~20% of the panel
+      // motion, so it's gone well before the panel/phone settle.
+      const heroOut = clamp01(mPanel / 0.2);
       if (heroTextRef.current) {
         heroTextRef.current.style.opacity = String(1 - heroOut);
-        heroTextRef.current.style.transform = `translate(-50%, ${-heroOut * 72}px)`;
+        heroTextRef.current.style.transform = `translateY(${-heroOut * 72}px)`;
       }
       const chromeOp = 1 - heroOut;
       if (statRef.current) statRef.current.style.opacity = String(chromeOp);
@@ -323,56 +374,199 @@ export function HeroSequenceV7() {
 
       // In-app screen transition: the splash holds steady (logo gently fades),
       // while the app surface SLIDES UP from below over it — the same motion
-      // iOS uses for a presented screen. The island is a sibling at higher
-      // z-index, so it stays fixed at the top while content slides behind it.
+      // iOS uses for a presented screen. Tied to the phone proxy so it resolves
+      // as the phone settles into the centre of the stage.
       if (splashRef.current) {
-        const sp = smooth(clamp01((me - 0.05) / 0.4));
+        const sp = clamp01((mPhone - 0.05) / 0.4);
         splashRef.current.style.opacity = String(1 - sp);
       }
       if (lottieWrapRef.current) {
-        const lp = smooth(clamp01(me / 0.5));
+        const lp = clamp01(mPhone / 0.5);
         const ty = (1 - lp) * 100;
         lottieWrapRef.current.style.opacity = "1";
         lottieWrapRef.current.style.transform = `translateY(${ty}%)`;
       }
 
-      const colOp = clamp01((me - 0.55) / 0.45);
+      const colOp = clamp01((mPanel - 0.55) / 0.45);
       if (copyColRef.current) copyColRef.current.style.opacity = String(colOp);
       if (railColRef.current) railColRef.current.style.opacity = String(colOp);
+    };
 
-      // ---- BEATS ----
-      const sp = clamp01((p - MORPH_END) / (1 - MORPH_END));
-      const sf = sp * BEATS.length;
-      BEATS.forEach((b, i) => {
-        const vis = beatVis(i, sf);
-        const holder = holderRefs[i].current;
-        if (holder) holder.style.opacity = vis;
-        if (ready[i] && anims[i]) anims[i].goToAndStop(clamp01(sf - i) * b.frames, true);
-
-        const cb = copyBeatRefs[i].current;
-        if (cb) { cb.style.opacity = vis; cb.style.transform = `translateY(calc(-50% + ${(1 - vis) * 12}px))`; }
-        const words = wordRefs.current[i];
-        if (words && words.length) {
-          const head = clamp01(sf - i) * words.length;
-          for (let j = 0; j < words.length; j++) if (words[j]) words[j].style.color = mixColor(GRAY, INK, clamp01(head - j));
-        }
-        const rb = railBeatRefs[i].current;
-        if (rb) { rb.style.opacity = vis; rb.style.transform = `translateY(calc(-50% + ${(1 - vis) * 10}px))`; }
+    // ---- Direction-triggered snap ----
+    // Crossing into / out of the hero commits the whole morph as a fixed, slow
+    // tween (it is NOT scrubbed). The phone trails the container by `STAGGER`
+    // seconds; on the way back the order flips so the phone leaves first.
+    const STAGGER = 0.7;
+    const setMorph = (target) => {
+      if (target === morphTarget) return;
+      morphTarget = target;
+      if (panelTween) panelTween.kill();
+      if (phoneTween) phoneTween.kill();
+      const forward = target === 1;
+      const panelDelay = forward ? 0 : STAGGER;
+      const phoneDelay = forward ? STAGGER : 0;
+      panelTween = gsap.to(morph, {
+        panel: target, duration: 2.5, ease: "power3.inOut",
+        delay: panelDelay, onUpdate: renderMorph, overwrite: "auto"
       });
-      if (railFillRef.current) railFillRef.current.style.height = sp * 100 + "%";
+      phoneTween = gsap.to(morph, {
+        phone: target, duration: 2.5, ease: "power3.inOut",
+        delay: phoneDelay, onUpdate: renderMorph, overwrite: "auto"
+      });
+    };
+
+    // ---- Beat reveal helpers (discrete, GSAP-driven) ----
+    const killBeatTweens = () => { beatTweens.forEach((t) => t && t.kill()); beatTweens = []; };
+
+    // Play a beat's Lottie from frame 0 and stop it exactly at
+    // LOTTIE_STOP_SECONDS (clamped to the clip length). playSegments with the
+    // force flag restarts the clip and, with loop:false, parks it on the stop
+    // frame — a deterministic freeze point for the fade-out.
+    const playBeatLottie = (i) => {
+      const a = anims[i];
+      if (!a || !a.playSegments || !ready[i]) return;
+      const fps = a.frameRate || 30;
+      const total = a.totalFrames || BEATS[i].frames;
+      const stop = Math.max(1, Math.min(total, Math.round(LOTTIE_STOP_SECONDS * fps)));
+      a.playSegments([0, stop], true);
+    };
+
+    // Word-by-word gray → ink fill for beat `i`, played once on reveal.
+    const revealWords = (i, dur, delay) => {
+      const words = wordRefs.current[i];
+      if (!words || !words.length) return;
+      words.forEach((w) => { if (w) w.style.color = mixColor(GRAY, INK, 0); });
+      const s = { h: 0 };
+      beatTweens.push(gsap.to(s, {
+        h: words.length, duration: dur, delay, ease: "power1.out",
+        onUpdate: () => {
+          for (let j = 0; j < words.length; j++)
+            if (words[j]) words[j].style.color = mixColor(GRAY, INK, clamp01(s.h - j));
+        }
+      }));
+    };
+
+    // Crossfade copy + rail label + Lottie holder from `prevBeat` to `beat`
+    // (-1 = hero / none) and PLAY that beat's Lottie from the top. `inDelay`
+    // holds the incoming reveal back until the morph has mostly resolved when
+    // arriving from the hero.
+    const showBeat = (beat, prevBeat, inDelay) => {
+      killBeatTweens();
+      activeBeat = beat;
+
+      if (prevBeat >= 0 && prevBeat !== beat) {
+        // Safety freeze: each Lottie normally parks itself on the 1.80s frame,
+        // but if the user scrolls on before it gets there, pause it where it is
+        // so it dissolves as a still image rather than animating mid-fade.
+        const pa = anims[prevBeat];
+        if (pa && pa.pause) pa.pause();
+        [copyBeatRefs[prevBeat], railBeatRefs[prevBeat], holderRefs[prevBeat]].forEach((r) => {
+          if (r.current) beatTweens.push(gsap.to(r.current, { opacity: 0, duration: 0.45, ease: "power2.inOut" }));
+        });
+      }
+
+      if (beat >= 0) {
+        [copyBeatRefs[beat], railBeatRefs[beat], holderRefs[beat]].forEach((r) => {
+          if (r.current) beatTweens.push(gsap.fromTo(r.current, { opacity: 0 }, { opacity: 1, duration: 0.5, delay: inDelay, ease: "power2.out" }));
+        });
+        revealWords(beat, 1.0, inDelay);
+        // Play from the start and stop dead at the 1.80s frame.
+        beatTweens.push(gsap.delayedCall(inDelay, () => playBeatLottie(beat)));
+        if (railFillRef.current) beatTweens.push(gsap.to(railFillRef.current, {
+          height: ((beat + 1) / BEATS.length) * 100 + "%", duration: 0.7, delay: inDelay, ease: "power2.inOut"
+        }));
+      } else if (railFillRef.current) {
+        beatTweens.push(gsap.to(railFillRef.current, { height: "0%", duration: 0.5, ease: "power2.inOut" }));
+      }
+    };
+
+    // ---- Step transition: fire the morph and/or beat crossfade for one step.
+    const goToStep = (next) => {
+      next = Math.max(0, Math.min(MAX, next));
+      if (next === step || locked) return;
+      const from = step;
+      step = next;
+      locked = true;
+
+      const wasHero = from === 0, isHero = next === 0;
+      let dur = 0.95; // beat-to-beat default
+
+      // Hero ⇄ how-it-works runs the slow staggered morph.
+      if (wasHero && !isHero) { setMorph(1); dur = 2.5 + STAGGER; }
+      else if (!wasHero && isHero) { setMorph(0); dur = 2.5 + STAGGER; }
+
+      const beat = next >= 1 ? next - 1 : -1;
+      const prevBeat = from >= 1 ? from - 1 : -1;
+      // Arriving from the hero, hold the beat reveal until the morph is ~55%
+      // through so the copy/rail/Lottie land as the phone reaches centre.
+      const inDelay = (wasHero && !isHero) ? (2.5 + STAGGER) * 0.55 : 0.08;
+      showBeat(beat, prevBeat, inDelay);
+
+      if (unlockCall) unlockCall.kill();
+      unlockCall = gsap.delayedCall(dur + 0.12, () => { locked = false; });
+    };
+
+    // ---- Input → step. Returns true when the gesture was consumed (caller
+    // should preventDefault); false means "let the page scroll" (release).
+    const gesture = (dir) => {
+      if (dir > 0) {
+        if (step === MAX) return locked;   // hold during the last reveal, else release
+        goToStep(step + 1);
+        return true;
+      }
+      if (dir < 0) {
+        if (step === 0) return true;       // nothing above the hero — swallow
+        goToStep(step - 1);
+        return true;
+      }
+      return true;
+    };
+
+    const onWheel = (e) => {
+      if (!engaged) return;
+      const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0;
+      if (!dir) return;
+      if (gesture(dir)) e.preventDefault();
+    };
+
+    let touchY = null;
+    const onTouchStart = (e) => { if (engaged && e.touches[0]) touchY = e.touches[0].clientY; };
+    const onTouchMove = (e) => {
+      if (!engaged || touchY === null || !e.touches[0]) return;
+      const dy = touchY - e.touches[0].clientY; // +ve = swipe up = advance
+      if (Math.abs(dy) < 18) return;
+      const dir = dy > 0 ? 1 : -1;
+      if (gesture(dir)) { e.preventDefault(); touchY = e.touches[0].clientY; }
+      else touchY = null; // released — let the page take over
+    };
+    const onTouchEnd = () => { touchY = null; };
+
+    const onKey = (e) => {
+      if (!engaged) return;
+      let dir = 0;
+      if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === " " || e.key === "Spacebar") dir = 1;
+      else if (e.key === "ArrowUp" || e.key === "PageUp") dir = -1;
+      if (!dir) return;
+      if (gesture(dir)) e.preventDefault();
     };
 
     const build = () => {
+      // Pin the hero in place. No scrub: progress isn't what drives the visuals
+      // (the step machine does). The short end-distance just gives a smooth
+      // release once the machine hands scrolling back at step 3, plus clean
+      // enter/leave boundaries to engage/disengage the input hijack.
       st = ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: () => "+=" + window.innerHeight * 5,
+        end: () => "+=" + window.innerHeight * 0.6,
         pin: pinRef.current,
-        scrub: 1,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        onUpdate: (self) => render(self.progress),
-        onRefresh: () => render(lastP)
+        onEnter: () => { engaged = true; },
+        onEnterBack: () => { engaged = true; step = MAX; }, // re-arm at the last beat
+        onLeave: () => { engaged = false; },
+        onLeaveBack: () => { engaged = false; },
+        onRefresh: renderMorph
       });
 
       loadTrigger = ScrollTrigger.create({
@@ -392,7 +586,16 @@ export function HeroSequenceV7() {
         }
       });
 
-      render(0);
+      // Start clean: all beat content hidden (hero shows none of it).
+      const hideAtStart = [
+        copyBeatRefs[0].current, copyBeatRefs[1].current, copyBeatRefs[2].current,
+        railBeatRefs[0].current, railBeatRefs[1].current, railBeatRefs[2].current,
+        holderRefs[0].current, holderRefs[1].current, holderRefs[2].current
+      ].filter(Boolean);
+      gsap.set(hideAtStart, { opacity: 0 });
+
+      renderMorph();
+      requestAnimationFrame(loadLotties); // make the Lotties available before the first step
     };
 
     // Bouncing scroll-down arrow (hero state only).
@@ -406,19 +609,95 @@ export function HeroSequenceV7() {
       build();
     }
 
-    const onResize = () => render(lastP);
+    const onResize = () => renderMorph();
     window.addEventListener("resize", onResize);
+    // Input hijack — capture phase + non-passive so we can preventDefault and
+    // beat ScrollSmoother to the wheel/touch event.
+    window.addEventListener("wheel", onWheel, { passive: false, capture: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true, capture: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true, capture: true });
+    window.addEventListener("keydown", onKey);
     const idle = window.setTimeout(loadLotties, 4500);
 
     return () => {
       killed = true;
       window.clearTimeout(idle);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("wheel", onWheel, { capture: true });
+      window.removeEventListener("touchstart", onTouchStart, { capture: true });
+      window.removeEventListener("touchmove", onTouchMove, { capture: true });
+      window.removeEventListener("touchend", onTouchEnd, { capture: true });
+      window.removeEventListener("keydown", onKey);
+      if (unlockCall) unlockCall.kill();
+      killBeatTweens();
       if (st) st.kill();
       if (loadTrigger) loadTrigger.kill();
       if (exitST) exitST.kill();
       if (arrowTween) arrowTween.kill();
+      if (panelTween) panelTween.kill();
+      if (phoneTween) phoneTween.kill();
       anims.forEach((a) => a && a.destroy && a.destroy());
+    };
+  }, []);
+
+  /* ---------- Rotating first headline line ----------
+     Same word-by-word blur reveal the v6 hero used (HeroV3): each phrase
+     reveals word by word (blur-in + rise on enter, blur-out + lift on exit),
+     cycling between the two phrases. Only the first line rotates; "in Minutes"
+     stays put, and the v7 styling (ink colour, kerning, variable-font axes)
+     is inherited from .hsq-title-a, so nothing about the look changes. */
+  React.useEffect(() => {
+    const el = titleRef.current;
+    if (!el || typeof gsap === "undefined") return;
+    const PHRASES = ["Learn Smarter", "Grow Faster"];
+    const DISPLAY_MS = 2200; // dwell once a phrase is fully revealed
+    let idx = 0, cancelled = false, timeoutId = 0;
+
+    // The line is its own single-line row; keep it shrink-to-fit + centred.
+    el.textContent = "";
+    el.style.display = "inline-block";
+    el.style.whiteSpace = "nowrap";
+
+    const buildWords = (phrase) => {
+      el.textContent = "";
+      const words = phrase.split(" ");
+      return words.map((w, i) => {
+        const s = document.createElement("span");
+        s.textContent = w;
+        s.style.cssText = "display:inline-block;will-change:transform,filter,opacity;";
+        el.appendChild(s);
+        if (i < words.length - 1) el.appendChild(document.createTextNode(" "));
+        return s;
+      });
+    };
+
+    const cycle = () => {
+      if (cancelled) return;
+      const spans = buildWords(PHRASES[idx]);
+      gsap.set(spans, { opacity: 0, filter: "blur(16px)", yPercent: 35 });
+      gsap.to(spans, {
+        opacity: 1, filter: "blur(0px)", yPercent: 0,
+        duration: 0.62, ease: "power3.out", stagger: 0.14,
+        onComplete: () => {
+          if (cancelled) return;
+          timeoutId = window.setTimeout(() => {
+            if (cancelled) return;
+            gsap.to(spans, {
+              opacity: 0, filter: "blur(16px)", yPercent: -30,
+              duration: 0.5, ease: "power3.in", stagger: 0.1,
+              onComplete: () => { idx = (idx + 1) % PHRASES.length; cycle(); }
+            });
+          }, DISPLAY_MS);
+        }
+      });
+    };
+    cycle();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      gsap.killTweensOf(el.querySelectorAll("span"));
     };
   }, []);
 
@@ -490,7 +769,7 @@ export function HeroSequenceV7() {
         <div ref={heroTextRef} className="hsq-hero-text">
           <div className="hsq-head">
             <h1 className="hsq-title">
-              <span className="hsq-title-a">Learn Smarter</span>
+              <span className="hsq-title-a" ref={titleRef}>Learn Smarter</span>
               <span className="hsq-title-b">in Minutes</span>
             </h1>
             <p className="hsq-sub">
