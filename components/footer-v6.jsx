@@ -14,7 +14,8 @@ import React from "react";
 const FOOTER_CSS = `
   .site-footer {
     /* ---- scoped design tokens ---- */
-    --panel:    #FFFFFF;   /* white footer panel */
+    --surface:  #FAF9F5;   /* footer panel surface */
+    --panel:    var(--surface);
     --ink:      #22191B;
     --ink-soft: #3D3034;
     --muted:    #7A6B6F;
@@ -255,7 +256,7 @@ export function SiteFooter() {
   return (
     <React.Fragment>
       <style>{FOOTER_CSS}</style>
-      <footer className="site-footer" style={{ backgroundColor: "rgb(255, 254, 251)" }}>
+      <footer className="site-footer" style={{ backgroundColor: "var(--surface)" }}>
           <div className="footer-shell">
 
             {/* Top CTA */}
