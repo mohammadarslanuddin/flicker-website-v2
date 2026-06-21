@@ -214,7 +214,7 @@ export function Listen({ children }) {
         <img className="ln-icon-img" src="flicker/audio-icon-container.svg" alt="" aria-hidden="true" width="68" height="68" />
 
         {/* Headline */}
-        <h2 className="ln-headline" style={{ fontWeight: "600", letterSpacing: "-0.03em", fontSize: "var(--text-2xl)" }}>One click away from<br />your first listen.</h2>
+        <h2 className="ln-headline" style={{ fontWeight: "700", letterSpacing: "-0.03em", fontSize: "clamp(var(--text-2xl), 2.6vw, var(--text-3xl))" }}>One click away from<br />your first listen.</h2>
 
         {/* Inner card */}
         <div className="ln-inner">

@@ -58,13 +58,12 @@
     text-decoration: none;
     border-radius: var(--radius-full);
     border: none;
-    /* Transform is driven by GSAP (see hero-v3.jsx); CSS transitions cover
-       the color/border/shadow side so they stay theme-aware. */
-    transition: background-color var(--dur-base) var(--ease-out),
-                color var(--dur-base) var(--ease-out),
-                box-shadow var(--dur-base) var(--ease-out),
-                border-color var(--dur-base) var(--ease-out);
-    will-change: transform;
+    /* Uniform hover: one smooth ~100ms colour fade shared by every button on
+       the page — no transform, scale, lift, or shadow. Same default behaviour
+       everywhere a button is clickable. */
+    transition: background-color 100ms var(--ease-out),
+                color 100ms var(--ease-out),
+                border-color 100ms var(--ease-out);
     cursor: pointer;
     user-select: none;
     line-height: 1;
@@ -716,7 +715,7 @@
     font-weight: 600;
     text-align: center;
     text-decoration: none;
-    transition: background var(--dur-base) var(--ease-out);
+    transition: background 100ms var(--ease-out);
   }
   .sw-btn:hover { background: #000; }
 
@@ -837,6 +836,10 @@
     letter-spacing: -0.03em;
     color: var(--flicker-body);
     text-align: center;
+    /* Keep each <br>-separated segment on one line so the headline reads as
+       exactly two lines ("One click away from" / "your first listen.") rather
+       than wrapping into three. */
+    white-space: nowrap;
   }
 
   /* ---- Inner card (white) ---- */

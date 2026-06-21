@@ -23,6 +23,8 @@ const MENU_ITEMS = [
 { label: "Home", target: '[data-screen-label="01 Hero"]' },
 { label: "How it works", target: '[data-screen-label="02 How it works"]' },
 { label: "Why Flicker App", target: '[data-screen-label="05 Growing"]' },
+{ label: "Reviews", target: '[data-screen-label="07 Reader Stories"]' },
+{ label: "FAQ", target: '[data-screen-label="08 FAQ"]' },
 { label: "Blogs", target: '[data-screen-label="06 Listen"]' }];
 
 // Inline Flicker mark (accepts currentColor) for the dock pill.
@@ -46,7 +48,7 @@ const NAV_STYLE = `
      never settles into the hidden state. */
   .flk-bar > *{ pointer-events:auto; }
   .flk-logo{ display:inline-flex; align-items:center; }
-  .flk-logo img{ height:28px; width:90px; display:block; }
+  .flk-logo img{ height:28px; width:auto; display:block; }
   .flk-bar-right{ display:flex; align-items:center; gap:14px; }
   /* Sign in — lives in the top bar next to the toggle. When the menu opens the
      dark container morphs in behind it and it INVERTS: same shape, flipped colors. */
@@ -467,7 +469,7 @@ export function SiteNav() {
 
     const onBtn = (e) => {e.preventDefault();setOpen((v) => !v);};
     const onPill = (e) => {e.preventDefault();setPillOpen((v) => !v);};
-    const onLogo = (e) => {e.preventDefault();go(MENU_ITEMS[0].target);};
+    const onLogo = (e) => {e.preventDefault();window.location.href = "/";};
     const onBackdrop = () => {setOpen(false);setPillOpen(false);};
     if (btn) btn.addEventListener("click", onBtn);
     if (pill) pill.addEventListener("click", onPill);
@@ -532,17 +534,17 @@ export function SiteNav() {
       if (pr !== progRef.current) {progRef.current = pr;setProgress(pr);}
 
       // --- Dock reveal / bar hide threshold ---
-      // Fire once the hero is ≥80% SCROLLED (its top has travelled up past 80%
+      // Fire once the hero is ≥70% SCROLLED (its top has travelled up past 70%
       // of its own height), not only when it has almost fully left the screen.
       // Measured from the hero's own rect so it holds for any hero height.
       const hero = heroElRef.current ||
       (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
       const pastHero = hero ?
-      (() => {const r = hero.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.8;})() :
-      y > window.innerHeight * 0.8;
+      (() => {const r = hero.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.7;})() :
+      y > window.innerHeight * 0.7;
 
       // The top bar lives only in the hero zone; it hides (current GSAP slide-up
-      // + fade) the instant the hero passes 80% scrolled.
+      // + fade) the instant the hero passes 70% scrolled.
       if (pastHero !== barHiddenRef.current) {barHiddenRef.current = pastHero;setHidden(pastHero);}
 
       // Direction: trust the actual (smoothed) scroll-position delta first.
@@ -730,11 +732,11 @@ export function SiteNav() {
 
       {/* Top bar — logo + Sign in + icon-only hamburger */}
       <header className="flk-bar" ref={barRef}>
-        <a className="flk-logo" href="#" aria-label="Flicker home" ref={logoRef}>
-          <img src="flicker/logo-flicker-brick.svg" alt="Flicker" />
+        <a className="flk-logo" href="/" aria-label="Flicker App home" ref={logoRef}>
+          <img src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
         </a>
         <div className={"flk-bar-right" + (open ? " is-open" : "")}>
-          <a href="#signin" className="cta cta-secondary flk-signin">Sign in</a>
+          <a href="#signin" className="cta cta-secondary flk-signin">Sign in<span className="cta-arrow" aria-hidden="true"><i className="ph ph-arrow-right" style={{ display: "block", fontSize: 16, lineHeight: 1 }}></i></span></a>
           <button type="button" className="flk-menu-btn" ref={btnRef}
           aria-expanded={open} aria-label="Toggle menu">
             <span className="flk-menu-glyph" data-open={open}><i></i><i></i></span>
@@ -747,13 +749,13 @@ export function SiteNav() {
       <div className={"flk-dock" + (docked ? " is-shown" : "")} ref={dockRef} data-open={pillOpen} aria-hidden={!docked}>
         <div className="flk-pillrow">
           <div className="flk-pill-left">
-            <a className="flk-dock-logo" href="#" aria-label="Flicker home" ref={dockLogoRef}>
-              <img className="flk-dock-logo-brick" src="flicker/logo-flicker-brick.svg" alt="Flicker" />
-              <img className="flk-dock-logo-white" src="flicker/logo-flicker-white.svg" alt="Flicker" />
+            <a className="flk-dock-logo" href="/" aria-label="Flicker App home" ref={dockLogoRef}>
+              <img className="flk-dock-logo-brick" src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
+              <img className="flk-dock-logo-white" src="flicker/logo-flicker-white.svg" alt="Flicker App" />
             </a>
           </div>
           <div className="flk-pill-right">
-            <a href="#start" className="cta cta-secondary flk-dock-cta">Sign In</a>
+            <a href="#start" className="cta cta-secondary flk-dock-cta">Sign In<span className="cta-arrow" aria-hidden="true"><i className="ph ph-arrow-right" style={{ display: "block", fontSize: 16, lineHeight: 1 }}></i></span></a>
             <button type="button" className="flk-pill-toggle" ref={pillBtnRef}
             aria-expanded={pillOpen} aria-label="Toggle menu">
               <span className="flk-pill-glyph" data-open={pillOpen}><i></i><i></i></span>

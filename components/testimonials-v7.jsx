@@ -42,7 +42,7 @@ const TM_CARDS = [
   et0: 0.05, et1: 0.35
 },
 {
-  quote: "Being able to seamlessly switch between the text and synchronized audio summaries makes Flicker the best pocket librarian I've ever used.",
+  quote: "Being able to seamlessly switch between the text and synchronized audio summaries makes Flicker App the best pocket librarian I've ever used.",
   name: "Elena R.",
   role: "Student",
   bg: "home-v7/flying-cards-2.jpg",

@@ -93,6 +93,8 @@ const CSS = `
     position: relative; height: 100vh; overflow: hidden; will-change: opacity, filter;
     --hsq-pad: clamp(44px, 6.5vw, 120px);
     --hsq-phone-half: 150px;
+    --hsq-hero-phone-half: 198px;             /* live: half the HERO-state phone width */
+    --hsq-chrome-gap: clamp(36px, 4.5vw, 88px); /* gap from the phone to the bottom chrome */
     --hsq-panel-inset: 40px;
     --hsq-header-h: 96px;   /* fixed site-header height — top bound of the hero band */
     --hsq-hero-foot: 44vh;  /* viewport→phone-top distance — bottom bound (live, set by JS) */
@@ -206,7 +208,7 @@ const CSS = `
   .hsq-rail-fill { position: absolute; top: 0; left: 0; right: 0; height: 0%; background: var(--flicker-body); border-radius: 2px; will-change: height; }
   .hsq-rail-labels { position: relative; flex: 1 1 auto; min-height: 84px; }
   .hsq-rail-beat { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); will-change: opacity; }
-  .hsq-rail-step { font-family: var(--font-sans); font-size: var(--text-base); font-weight: 500; color: var(--flicker-ink-mute, #7a6b6f); margin: 0 0 12px 0; }
+  .hsq-rail-step { font-family: var(--font-sans); font-size: var(--text-base); font-weight: 500; color: var(--flicker-ink-mute, #7a6b6f); margin: 0 0 8px 0; }
   .hsq-rail-title { font-family: var(--font-serif-display, var(--font-serif)); font-weight: 600; font-size: clamp(var(--text-lg), 1.8vw, var(--text-xl)); line-height: var(--leading-heading); letter-spacing: -0.03em; color: var(--flicker-body, #22191b); margin: 0; text-wrap: balance; }
 
   /* ---- Bottom chrome (hero only; fades out during morph) ---- */
@@ -224,6 +226,17 @@ const CSS = `
   @media (max-width: 900px) { .hsq-copy { display: none; } }
   @media (max-width: 680px) { .hsq-rail { display: none; } }
   @media (max-width: 720px) { .hsq-title { white-space: normal; } }
+
+  /* On wider screens, pull the bottom chrome in from the viewport edges so it
+     hugs the centered phone — same phone-gap rhythm (--hsq-pad) as the copy /
+     rail columns. Below 901px (where those columns hide) it stays edge-anchored
+     so the text never collides with the phone on narrow screens. */
+  @media (min-width: 901px) {
+    /* The left stat is a long right-aligned string, so its gap optically reads
+       larger than the short "Scroll" on the right — pull it in ~20px to match. */
+    .hsq-stat { left: auto; right: calc(50% + var(--hsq-hero-phone-half) + var(--hsq-chrome-gap) - 20px); }
+    .hsq-scroll { right: auto; left: calc(50% + var(--hsq-hero-phone-half) + var(--hsq-chrome-gap)); }
+  }
 `;
 
 export function HeroSequenceV7() {
@@ -335,6 +348,11 @@ export function HeroSequenceV7() {
       // from inside the rounded panel (NOT the viewport edge).
       if (pinRef.current) {
         pinRef.current.style.setProperty("--hsq-phone-half", (ipW / 2) + "px");
+        // The bottom chrome (stat / scroll) only shows in the HERO state, where
+        // the phone is hpW wide — NOT the smaller how-it-works phone. Expose its
+        // half-width separately so the chrome gap is measured from the phone the
+        // user actually sees, keeping both sides equal.
+        pinRef.current.style.setProperty("--hsq-hero-phone-half", (hpW / 2) + "px");
         pinRef.current.style.setProperty("--hsq-panel-inset", hiwMH + "px");
         // Bottom bound of the centred hero band = distance from the viewport
         // top down to the hero-state phone's top edge.
@@ -770,7 +788,7 @@ export function HeroSequenceV7() {
             <div ref={lottieWrapRef} className="hsq-lotties" style={{ opacity: 0, transform: "translateX(100%)" }}>
               {BEATS.map((b, i) =>
               <div key={i} ref={holderRefs[i]} className="hsq-lottie" role="img"
-                aria-label="A demonstration of the Flicker app reading experience"
+                aria-label="A demonstration of the Flicker App reading experience"
                 style={{ opacity: i === 0 ? 1 : 0 }} />
               )}
             </div>
@@ -790,7 +808,7 @@ export function HeroSequenceV7() {
             </h1>
             <p className="hsq-sub">
               Get the core ideas from the world&rsquo;s best books, without the hours.
-              Flicker turns big reads into clear insights you can use today.
+              Flicker App turns big reads into clear insights you can use today.
             </p>
           </div>
           <div className="hsq-ctas">
@@ -809,12 +827,6 @@ export function HeroSequenceV7() {
 
         {/* Bottom-left stat */}
         <div ref={statRef} className="hsq-chrome hsq-stat">
-          <span aria-hidden="true" className="stat-stack">
-            <img src="books/03.png" alt="" className="stat-stack-cover" style={{ zIndex: 4 }} />
-            <img src="books/07.png" alt="" className="stat-stack-cover" style={{ zIndex: 3 }} />
-            <img src="books/10.png" alt="" className="stat-stack-cover" style={{ zIndex: 2 }} />
-            <img src="books/12.png" alt="" className="stat-stack-cover" style={{ zIndex: 1 }} />
-          </span>
           2,300+ titles &middot; 15-min reads
         </div>
 

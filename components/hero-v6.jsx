@@ -229,47 +229,12 @@ export function HeroV3({ tweaks, setTweak }) {
   }, [bookCardDismissed]);
 
   /* ---------- GSAP hover layer ----------
-     Modern hover scale/translate on the page's primary interactives, wired
-     after mount. CSS still owns color/border transitions; this layer owns
-     transform-based motion so it composes cleanly with entrance/dismiss
-     tweens elsewhere. */
+     Buttons no longer use transform-based hover. Every button on the page
+     shares ONE uniform ~100ms colour fade defined in CSS (.cta in page.css,
+     plus footer/member buttons). This layer now only wires the book-card
+     dismiss affordance. */
   useEffect(() => {
     const cleanups = [];
-
-    const wire = (el, enter, leave) => {
-      el.addEventListener("mouseenter", enter);
-      el.addEventListener("mouseleave", leave);
-      el.addEventListener("mousedown", press);
-      el.addEventListener("mouseup", release);
-      cleanups.push(() => {
-        el.removeEventListener("mouseenter", enter);
-        el.removeEventListener("mouseleave", leave);
-        el.removeEventListener("mousedown", press);
-        el.removeEventListener("mouseup", release);
-      });
-    };
-
-    // Press feedback: subtle squish on every CTA
-    function press(e) {
-      gsap.to(e.currentTarget, { scale: 0.97, duration: 0.12, ease: "power2.out", overwrite: "auto" });
-    }
-    function release(e) {
-      gsap.to(e.currentTarget, { scale: 1.04, duration: 0.18, ease: "power2.out", overwrite: "auto" });
-    }
-
-    // Primary + Secondary CTAs \u2014 lift + scale on hover, arrow slides on primary
-    document.querySelectorAll(".cta").forEach((el) => {
-      const arrow = el.querySelector(".cta-arrow");
-      const enter = () => {
-        gsap.to(el, { scale: 1.04, y: -2, duration: 0.32, ease: "power3.out", overwrite: "auto" });
-        if (arrow) gsap.to(arrow, { x: 4, duration: 0.32, ease: "power3.out", overwrite: "auto" });
-      };
-      const leave = () => {
-        gsap.to(el, { scale: 1, y: 0, duration: 0.4, ease: "power3.out", overwrite: "auto" });
-        if (arrow) gsap.to(arrow, { x: 0, duration: 0.4, ease: "power3.out", overwrite: "auto" });
-      };
-      wire(el, enter, leave);
-    });
 
     // Book-card dismiss (\u00d7) \u2014 gentle scale on hover, distinct from card lift
     document.querySelectorAll(".book-card-dismiss").forEach((el) => {
@@ -802,7 +767,7 @@ export function HeroV3({ tweaks, setTweak }) {
             }}>
           
           Get the core ideas from the world&rsquo;s best books, without the
-          hours. Flicker turns big reads into clear insights you can use today.
+          hours. Flicker App turns big reads into clear insights you can use today.
         </p>
 
         {/* CTAs */}
@@ -1007,7 +972,7 @@ function AfterHeroV3() {
           fontWeight: 600
         }}>
         
-        Every Flicker is a 15-minute distillation written by editors, not
+        Every Flicker App is a 15-minute distillation written by editors, not
         algorithms. Listen on the commute, read in bed, save what
         matters &mdash; and keep the books you love in your pocket.
       </p>
