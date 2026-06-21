@@ -1,4 +1,4 @@
-# Flicker — Home page
+# Flicker App — Home page
 
 Implementation of the **Home** page from the *Flicker Site v2* design bundle
 (Claude Design handoff), built with **Next.js (App Router)**. The JSX is compiled
