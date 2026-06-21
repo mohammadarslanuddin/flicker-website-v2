@@ -69,14 +69,12 @@ const MEMBER_CTA_CSS = `
     border: none;
     border-radius: var(--radius-full, 999px);
     cursor: pointer;
-    transition: background-color .2s cubic-bezier(.16,1,.3,1),
-                transform .2s cubic-bezier(.16,1,.3,1);
+    transition: background-color 100ms cubic-bezier(.16,1,.3,1),
+                color 100ms cubic-bezier(.16,1,.3,1),
+                border-color 100ms cubic-bezier(.16,1,.3,1);
   }
-  .mcta-btn:hover { transform: translateY(-2px) scale(1.04); }
-  .mcta-btn:active { transform: scale(0.98); }
-  .mcta-btn .mcta-arrow { display: inline-flex; align-items: center; transition: transform .2s cubic-bezier(.16,1,.3,1); }
+  .mcta-btn .mcta-arrow { display: inline-flex; align-items: center; }
   .mcta-btn .mcta-arrow i { font-size: 14px; line-height: 1; display: block; }
-  .mcta-btn:hover .mcta-arrow { transform: translateX(4px); }
   /* Join — the site's primary CTA, inverted for the dark belly (cream fill, ink text).
      Sized to match the hero's .cta button exactly (58px tall): 21px vertical
      padding + a 16px arrow, mirroring the hero "Get started" button. */
@@ -234,7 +232,7 @@ export function MemberCTA() {
         <div className="mcta-info">
           <p className="mcta-eyebrow">Discover the platform</p>
           <h3 className="mcta-card-heading">
-            <span className="dim">See how the platform works: </span><strong>try your first summary for free.</strong>
+            <span className="dim">See how the platform works: </span>try your first summary for <strong style={{ fontWeight: 700 }}>free.</strong>
           </h3>
           <a href="#listen" className="mcta-btn mcta-try">Try it now<span className="mcta-arrow" aria-hidden="true"><i className="ph ph-arrow-right"></i></span></a>
           <p className="mcta-note">(No registration or credit card needed)</p>

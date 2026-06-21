@@ -263,7 +263,7 @@ export function HeroV7() {
           </h1>
           <p className="hv7-sub">
             Get the core ideas from the world&rsquo;s best books, without the hours.
-            Flicker turns big reads into clear insights you can use today.
+            Flicker App turns big reads into clear insights you can use today.
           </p>
         </div>
 

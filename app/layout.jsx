@@ -1,7 +1,9 @@
 import Script from "next/script";
 
 export const metadata = {
-  title: "Home",
+  title: "Flicker App: Smart Book Summaries, Read or Listen in Minutes",
+  description:
+    "Get the core ideas from the world's best books in minutes. Flicker App delivers AI-curated book summaries for busy professionals and lifelong learners.",
 };
 
 export const viewport = {

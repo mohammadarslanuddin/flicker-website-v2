@@ -24,7 +24,7 @@ const MEMBER_CTA_V7_CSS = `
     align-items: center;
     padding: clamp(120px, 18vh, 220px) clamp(16px, 4vw, 48px) clamp(80px, 10vh, 140px);
   }
-  .m7-top { display: flex; flex-direction: column; align-items: center; will-change: opacity, transform; }
+  .m7-top { display: flex; flex-direction: column; align-items: center; will-change: opacity; }
 
   .m7-heading {
     margin: 0;
@@ -94,16 +94,18 @@ const MEMBER_CTA_V7_CSS = `
     background: #FFFEFB;
     border-radius: clamp(20px, 2.2vw, 30px);
     display: grid;
-    grid-template-columns: 40% 1fr;
+    grid-template-columns: 1fr 1fr;   /* 50/50 — matches Figma's 590/590 split */
     overflow: hidden;
-    will-change: opacity, transform;
+    will-change: opacity;
   }
   .m7-info {
     padding: clamp(40px, 5vw, 80px) clamp(36px, 4.5vw, 72px);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: center;
+    /* Top three layers (eyebrow → heading → button) sit against the top
+       padding; the note is pushed to the bottom padding via margin-top:auto. */
+    justify-content: flex-start;
   }
   .m7-eyebrow {
     margin: 0;
@@ -137,7 +139,11 @@ const MEMBER_CTA_V7_CSS = `
   .m7-card-heading .dim { color: #7A6B6F; }
   .m7-card-heading .brick { color: var(--flicker-brick, #c13441); }
   .m7-note {
+    /* margin-top:auto pins this to the bottom padding of the info column;
+       the clamp keeps a minimum gap when the column is short. */
     margin: clamp(36px, 6vh, 72px) 0 0;
+    margin-top: auto;
+    padding-top: clamp(36px, 6vh, 72px);
     font-family: var(--font-sans);
     font-size: var(--text-xs);
     font-weight: 500;
@@ -146,10 +152,15 @@ const MEMBER_CTA_V7_CSS = `
     color: #7A6B6F;
   }
 
-  /* Media half — sky backdrop + floating web-app browser mockup. */
+  /* Media half — two layers, per Figma node 30:2698:
+       1. the sky-gradient backdrop (cta-bg.jpg) fills the whole half;
+       2. the browser mockup (transparent PNG, browser only) is anchored to the
+          bottom-right corner, with the gradient showing through the top + left
+          breathing room. The browser bleeds off the bottom-right and is clipped
+          by the card's overflow:hidden. */
   .m7-media {
     position: relative;
-    min-height: clamp(380px, 34vw, 560px);
+    min-height: clamp(440px, 42vw, 565px);   /* Figma half is 565px tall */
     background-image: url(home-v7/cta-bg.jpg);
     background-size: cover;
     background-position: center;
@@ -157,11 +168,10 @@ const MEMBER_CTA_V7_CSS = `
   }
   .m7-browser {
     position: absolute;
-    left: 11%;
-    top: 13%;
-    width: 100%;
-    border-radius: 14px 0 0 0;
-    box-shadow: 0 30px 70px rgba(20, 14, 16, 0.32);
+    right: 0;
+    bottom: 0;
+    width: 86.8%;          /* 512 / 590 — browser frame width inside the half */
+    height: auto;          /* intrinsic aspect, no distortion */
     display: block;
   }
 
@@ -169,7 +179,6 @@ const MEMBER_CTA_V7_CSS = `
     .m7-card { grid-template-columns: 1fr; }
     .m7-info { order: 1; }
     .m7-media { order: 2; min-height: clamp(280px, 56vw, 440px); }
-    .m7-browser { left: 8%; top: 12%; }
   }
 
   @media (prefers-reduced-motion: reduce) {

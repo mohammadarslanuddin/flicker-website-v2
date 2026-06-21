@@ -75,15 +75,15 @@ const FOOTER_CSS = `
   .site-footer .footer-cta-buttons {
     margin-top: clamp(14px, 1.6vw, 22px);
     display: flex;
-    gap: 6px;
+    gap: 12px;            /* between-button distance — matches the hero CTAs */
     justify-content: center;
     flex-wrap: wrap;
   }
   .site-footer .btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 17px 34px;
+    gap: 12px;           /* label↔arrow gap — matches the hero .cta */
+    padding: 14px 28px;  /* button size — matches the hero .cta */
     font-family: var(--f-sans);
     font-size: var(--text-base);
     font-weight: 600;
@@ -95,19 +95,17 @@ const FOOTER_CSS = `
     border: none;
     border-radius: var(--radius-full, 999px);
     cursor: pointer;
-    transition: background-color .2s cubic-bezier(.16,1,.3,1),
-                transform .2s cubic-bezier(.16,1,.3,1);
+    transition: background-color 100ms cubic-bezier(.16,1,.3,1),
+                color 100ms cubic-bezier(.16,1,.3,1),
+                border-color 100ms cubic-bezier(.16,1,.3,1);
   }
-  .site-footer .btn:hover { transform: translateY(-2px) scale(1.04); }
-  .site-footer .btn:active { transform: scale(0.98); }
   .site-footer .btn .tri { width: 10px; height: 7px; display: block; opacity: 0.85; }
   /* CTA buttons follow the hero approach (see .cta in Hero v6.html):
      primary  = body-color fill (the black variant) + light text + sliding arrow;
      secondary = white fill with a neutral-grey hairline that drops on hover.
      Hierarchy + lift/scale/arrow-slide functionality mirror the hero buttons. */
-  .site-footer .btn-arrow { display: inline-flex; align-items: center; transition: transform .2s cubic-bezier(.16,1,.3,1); }
+  .site-footer .btn-arrow { display: inline-flex; align-items: center; }
   .site-footer .btn-arrow i { font-size: 16px; line-height: 1; display: block; }
-  .site-footer .btn:hover .btn-arrow { transform: translateX(4px); }
   .site-footer .btn-primary { background: var(--ink); color: var(--on-brick); }
   .site-footer .btn-primary:hover { background: var(--ink-soft); }
   .site-footer .btn-secondary { background: #FFFFFF; color: var(--ink); border: 1px solid #E7E4DE; }
@@ -133,47 +131,47 @@ const FOOTER_CSS = `
   }
   .site-footer .footer-newsletter .footer-col-title { max-width: 16ch; }
 
-  /* ---- Newsletter ---- */
+  /* ---- Newsletter (Shadcn Input — exact styles from Figma) ---- */
   .site-footer .newsletter-form {
     display: flex;
     align-items: center;
-    gap: 8px;
-    max-width: 380px;
-    background: var(--field);
-    border-radius: var(--radius-full, 999px);
-    padding: 6px 6px 6px 20px;
+    gap: 12px;            /* --sm: gap between field text and Submit */
+    width: 320px;        /* Figma "Vertical Field" width */
+    max-width: 100%;
+    min-height: 40px;
+    background: #FFFFFF;             /* --general/input */
+    border: 1px solid #E7E4E0;      /* --general/border */
+    border-radius: 8px;             /* --rounded-lg */
+    padding: 9.5px 16px;            /* --hacks-to-fit-scale/9p5 × --md */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);   /* shadow-xs */
+    overflow: hidden;
   }
   .site-footer .newsletter-form input {
     flex: 1 1 auto;
     min-width: 0;
     border: none;
     background: none;
-    color: var(--ink);
+    color: var(--ink);              /* --general/foreground */
     font-family: var(--f-sans);
-    font-size: var(--text-base);
-    padding: 9px 0;
+    font-size: var(--text-sm);      /* paragraph/small — 14px */
+    line-height: 20px;
+    padding: 0;
     outline: none;
   }
-  .site-footer .newsletter-form input::placeholder { color: var(--muted); }
+  .site-footer .newsletter-form input::placeholder { color: var(--muted); }   /* --general/muted-foreground */
   .site-footer .newsletter-form button {
     flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--ink);
-    color: var(--on-brick);
+    background: none;
     border: none;
-    border-radius: var(--radius-full, 999px);
-    padding: 10px 18px;
+    padding: 0;
+    color: #71717A;                 /* --general/muted-foreground */
     font-family: var(--f-sans);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    letter-spacing: -0.005em;
+    font-size: var(--text-sm);      /* paragraph/small — 14px */
+    line-height: 20px;
     cursor: pointer;
-    transition: background-color .2s cubic-bezier(.16,1,.3,1);
+    transition: color .2s cubic-bezier(.16,1,.3,1);
   }
-  .site-footer .newsletter-form button:hover { background: var(--ink-soft); }
-  .site-footer .newsletter-form button .tri { width: 9px; height: 6px; display: block; opacity: 0.85; }
+  .site-footer .newsletter-form button:hover { color: var(--ink); }
   .site-footer .newsletter-disclaimer {
     margin: 18px 0 0;
     max-width: 340px;
@@ -253,12 +251,6 @@ const FOOTER_CSS = `
   }
 `;
 
-const Tri = () =>
-<svg className="tri" viewBox="0 0 10 6" aria-hidden="true">
-    <path d="M0 0h10L5 6z" fill="currentColor" />
-  </svg>;
-
-
 export function SiteFooter() {
   return (
     <React.Fragment>
@@ -284,12 +276,12 @@ export function SiteFooter() {
               <div className="footer-col footer-newsletter">
                 <h3 className="footer-col-title">Never miss what’s next</h3>
                 <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                  <input type="email" placeholder="Your email" aria-label="Your email" />
-                  <button type="submit">Submit<Tri /></button>
+                  <input type="email" placeholder="Your Email" aria-label="Your email" />
+                  <button type="submit">Submit</button>
                 </form>
                 <p className="newsletter-disclaimer">
                   By submitting your email, you’ll be the first to know about new
-                  summaries and updates from Flicker. You can unsubscribe at any time.
+                  summaries and updates from Flicker App. You can unsubscribe at any time.
                 </p>
               </div>
 
@@ -331,8 +323,8 @@ export function SiteFooter() {
                 <li><a href="#privacy">Privacy policy</a></li>
                 <li><a href="#cookies">Cookies</a></li>
               </ul>
-              <a className="footer-brand" href="#top" aria-label="Flicker home">
-                <img src="flicker/logo-flicker-brick.svg" alt="Flicker" />
+              <a className="footer-brand" href="#top" aria-label="Flicker App home">
+                <img src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
               </a>
             </div>
 
