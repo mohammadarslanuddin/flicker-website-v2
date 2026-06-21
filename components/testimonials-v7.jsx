@@ -90,8 +90,8 @@ const TM_CSS = `
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: clamp(30px, 3.1vw, 46px);
-    line-height: 1.0;
+    font-size: clamp(var(--text-xl), 3.1vw, var(--text-3xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-canvas);
     text-wrap: balance;
@@ -102,7 +102,7 @@ const TM_CSS = `
     max-width: 520px;
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: clamp(15px, 1.2vw, 18px);
+    font-size: var(--text-base);
     line-height: 1.5;
     color: rgba(255, 249, 236, 0.72);
     text-wrap: pretty;
@@ -135,7 +135,7 @@ const TM_CSS = `
     font-family: var(--font-serif);
     font-style: italic;
     font-weight: 500;
-    font-size: clamp(13px, 0.95vw, 15px);
+    font-size: clamp(var(--text-sm), 0.95vw, var(--text-base));
     line-height: 1.34;
     letter-spacing: -0.005em;
     color: var(--flicker-ink-soft, #3d3034);
@@ -146,14 +146,14 @@ const TM_CSS = `
   .t7-name {
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: 13px;
+    font-size: var(--text-sm);
     letter-spacing: -0.01em;
     color: var(--flicker-body, #22191b);
   }
   .t7-role {
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: 11px;
+    font-size: var(--text-xs);
     color: var(--flicker-ink-mute, #7a6b6f);
   }
   .t7-avatar {

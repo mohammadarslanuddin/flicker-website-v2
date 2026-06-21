@@ -758,8 +758,8 @@ export function HeroV3({ tweaks, setTweak }) {
               margin: 0,
               fontFamily: "var(--font-serif-display)",
               fontWeight: 600,
-              fontSize: "clamp(48px, 8vw, 132px)",
-              lineHeight: 0.9,
+              fontSize: "clamp(var(--text-3xl), 8vw, var(--text-6xl))",
+              lineHeight: "var(--leading-none)",
               letterSpacing: "-0.03em",
               color: "var(--ink)",
               maxWidth: 1200,
@@ -781,7 +781,7 @@ export function HeroV3({ tweaks, setTweak }) {
                 display: "block",
                 fontStyle: "italic",
 
-                color: "var(--brick)", lineHeight: 0.9, fontWeight: "600", fontSize: "clamp(48px, 8vw, 132px)", fontFamily: "var(--font-serif-display)"
+                color: "var(--brick)", lineHeight: "var(--leading-none)", fontWeight: "600", fontSize: "clamp(var(--text-3xl), 8vw, var(--text-6xl))", fontFamily: "var(--font-serif-display)"
               }}>in minutes.
 
 
@@ -794,7 +794,7 @@ export function HeroV3({ tweaks, setTweak }) {
               margin: "26px 0 0 0",
               fontFamily: "var(--font-sans)",
 
-              fontSize: "clamp(17px, 1.4vw, 22px)",
+              fontSize: "var(--text-base)",
               lineHeight: 1.5,
               color: "var(--ink-soft)",
               maxWidth: 620,
@@ -893,8 +893,8 @@ export function HeroV3({ tweaks, setTweak }) {
                 loading="lazy" />
 
             <div className="book-card-text">
-              <span className="book-card-badge" style={{ fontWeight: "400", fontSize: "9px" }}>Book of the week</span>
-              <span className="book-card-title" style={{ letterSpacing: "-0.04em", fontSize: "16px" }}>Atomic Habits</span>
+              <span className="book-card-badge" style={{ fontWeight: "400", fontSize: "var(--text-2xs)" }}>Book of the week</span>
+              <span className="book-card-title" style={{ letterSpacing: "-0.04em", fontSize: "var(--text-base)" }}>Atomic Habits</span>
               <span className="book-card-meta">
                 <span>James Clear</span>
                 <span aria-hidden="true" className="book-card-meta-dot" />

@@ -61,7 +61,8 @@ const HERO_V7_CSS = `
     gap: 0.25em; /* visible breathing room between the two lines, per Figma */
     font-family: var(--font-serif-display, var(--font-serif));
     font-weight: 600;
-    font-size: clamp(54px, 6.7vw, 96px);
+    font-size: clamp(var(--text-3xl), 6.7vw, var(--text-5xl));
+    line-height: var(--leading-none);
     white-space: nowrap;
     font-variation-settings: "SOFT" 100, "WONK" 1;
   }
@@ -76,7 +77,7 @@ const HERO_V7_CSS = `
     max-width: 669px;
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: clamp(17px, 1.4vw, 20px);
+    font-size: var(--text-base);
     line-height: 1.35;
     color: var(--ink-soft, #3d3034);
     text-wrap: pretty;
@@ -84,7 +85,7 @@ const HERO_V7_CSS = `
 
   .hv7-ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
   /* The design buttons use 16px text + 12/32 padding — nudge the shared .cta. */
-  .hv7-ctas .cta { padding: 12px 32px; font-size: 16px; }
+  .hv7-ctas .cta { padding: 12px 32px; font-size: var(--text-base); }
   .hv7-ctas .cta-secondary img { display: block; border-radius: 7px; }
 
   /* ---- Stage: rounded panel + phone, anchored to the foot of the hero ---- */
@@ -165,7 +166,7 @@ const HERO_V7_CSS = `
     align-items: center;
     gap: 10px;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -182,7 +183,7 @@ const HERO_V7_CSS = `
     align-items: center;
     gap: 10px;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -194,7 +195,7 @@ const HERO_V7_CSS = `
 
   @media (max-width: 720px) {
     .hv7-title { white-space: normal; }
-    .hv7-stat, .hv7-scroll { font-size: 11px; }
+    .hv7-stat, .hv7-scroll { font-size: var(--text-xs); }
   }
 `;
 

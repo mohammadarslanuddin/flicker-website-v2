@@ -112,7 +112,7 @@ const FAQ_CSS = `
     text-align: left;
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: clamp(15px, 1.15vw, 18px);
+    font-size: var(--text-base);
     letter-spacing: -0.01em;
     color: #FFF9EC;
   }
@@ -143,7 +143,7 @@ const FAQ_CSS = `
     padding: 0 clamp(16px, 1.5vw, 22px) clamp(14px, 1.2vw, 18px);
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: clamp(14px, 1vw, 16px);
+    font-size: var(--text-base);
     line-height: 1.6;
     color: rgba(255,249,236,0.65);
     text-wrap: pretty;

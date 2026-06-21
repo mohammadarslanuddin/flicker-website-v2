@@ -449,7 +449,7 @@ export function HowItWorks() {
               <div
               ref={trackRefs[i]}
               className="genre-track"
-              style={{ fontFamily: "Outfit", opacity: 0.3, fontSize: "72px", lineHeight: "1.25" }}>
+              style={{ fontFamily: "Outfit", opacity: 0.3, fontSize: "var(--text-4xl)", lineHeight: "1.25" }}>
                 {rowText(items)}
               </div>
             </div>
@@ -471,8 +471,8 @@ export function HowItWorks() {
               <div className="rail-labels">
                 {BEATS.map((b, i) =>
                 <div key={i} ref={railBeatRefs[i]} className="rail-beat" style={{ opacity: i === 0 ? 1 : 0 }}>
-                    <p className="rail-step" style={{ fontSize: "14px" }}>{b.step}</p>
-                    <p className="rail-title" style={{ fontFamily: "var(--font-serif)", fontWeight: "600", letterSpacing: "-0.03em", fontSize: "21px" }}>{b.title}</p>
+                    <p className="rail-step" style={{ fontSize: "var(--text-sm)" }}>{b.step}</p>
+                    <p className="rail-title" style={{ fontFamily: "var(--font-serif)", fontWeight: "600", letterSpacing: "-0.03em", fontSize: "var(--text-lg)" }}>{b.title}</p>
                   </div>
                 )}
               </div>

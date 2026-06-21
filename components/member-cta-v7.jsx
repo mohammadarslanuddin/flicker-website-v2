@@ -30,8 +30,8 @@ const MEMBER_CTA_V7_CSS = `
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: clamp(40px, 4.4vw, 65px);
-    line-height: 0.95;
+    font-size: clamp(var(--text-2xl), 4.4vw, var(--text-4xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     text-align: center;
     text-wrap: balance;
@@ -46,7 +46,7 @@ const MEMBER_CTA_V7_CSS = `
     gap: 12px;
     padding: 18px 30px;
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -69,7 +69,7 @@ const MEMBER_CTA_V7_CSS = `
   .m7-join {
     margin-top: clamp(34px, 5vh, 52px);
     padding: 21px 28px;
-    font-size: 15px;
+    font-size: var(--text-base);
     letter-spacing: -0.005em;
     text-transform: none;
     background: var(--flicker-brick, #c13441);
@@ -111,7 +111,7 @@ const MEMBER_CTA_V7_CSS = `
     align-items: center;
     gap: 10px;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -128,8 +128,8 @@ const MEMBER_CTA_V7_CSS = `
     max-width: 14ch;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: clamp(28px, 2.6vw, 42px);
-    line-height: 1.04;
+    font-size: clamp(var(--text-xl), 2.6vw, var(--text-2xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.02em;
     color: #22191B;
     text-wrap: balance;
@@ -139,7 +139,7 @@ const MEMBER_CTA_V7_CSS = `
   .m7-note {
     margin: clamp(36px, 6vh, 72px) 0 0;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;

@@ -120,8 +120,8 @@ const TM_CSS = `
     margin: 0;
     font-family: var(--font-serif);   /* Fraunces — same as .sw-h2 */
     font-weight: 600;
-    font-size: clamp(28px, 3vw, 44px);
-    line-height: 0.9;
+    font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-canvas);
     text-wrap: balance;
@@ -132,7 +132,7 @@ const TM_CSS = `
     max-width: 560px;
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: clamp(17px, 1.4vw, 22px);
+    font-size: var(--text-base);
     line-height: 1.5;
     color: rgba(255, 249, 236, 0.72);
     text-wrap: pretty;
@@ -168,8 +168,8 @@ const TM_CSS = `
     margin: 0;
     font-family: var(--font-serif);   /* Fraunces */
     font-weight: 600;
-    font-size: clamp(18px, 1.4vw, 22px);
-    line-height: 0.9;
+    font-size: var(--text-base);
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-body);
     text-wrap: pretty;
@@ -180,14 +180,14 @@ const TM_CSS = `
   .tm-name {
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: 16px;
+    font-size: var(--text-base);
     letter-spacing: -0.01em;
     color: var(--flicker-body);
   }
   .tm-role {
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--text-sm);
     color: var(--flicker-ink-mute);
   }
 

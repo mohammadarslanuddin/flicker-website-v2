@@ -91,7 +91,7 @@ const CSS = `
      symmetric regardless of viewport. */
   .hsq-pin {
     position: relative; height: 100vh; overflow: hidden; will-change: opacity, filter;
-    --hsq-pad: clamp(24px, 4vw, 72px);
+    --hsq-pad: clamp(44px, 6.5vw, 120px);
     --hsq-phone-half: 150px;
     --hsq-panel-inset: 40px;
     --hsq-header-h: 96px;   /* fixed site-header height — top bound of the hero band */
@@ -126,17 +126,17 @@ const CSS = `
   .hsq-title {
     margin: 0; display: flex; flex-direction: column; align-items: center;
     font-family: var(--font-serif-display, var(--font-serif));
-    font-weight: 600; font-size: clamp(54px, 6.7vw, 96px); line-height: 0.85;
+    font-weight: 600; font-size: clamp(var(--text-3xl), 6.7vw, var(--text-5xl)); line-height: var(--leading-none);
     white-space: nowrap; font-variation-settings: "SOFT" 100, "WONK" 1;
   }
   .hsq-title-a { color: var(--ink, #22191b); letter-spacing: -0.025em; }
   .hsq-title-b { color: var(--flicker-brick, #c13441); letter-spacing: -0.03em; }
   .hsq-sub {
     margin: 0; max-width: 669px; font-family: var(--font-sans); font-weight: 400;
-    font-size: clamp(17px, 1.4vw, 20px); line-height: 1.35; color: var(--ink-soft, #3d3034); text-wrap: pretty;
+    font-size: var(--text-base); line-height: 1.35; color: var(--ink-soft, #3d3034); text-wrap: pretty;
   }
   .hsq-ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-  .hsq-ctas .cta { padding: 12px 32px; font-size: 16px; }
+  .hsq-ctas .cta { padding: 16px 40px; font-size: var(--text-base); }
   .hsq-ctas .cta-secondary img { display: block; border-radius: 7px; }
 
   /* ---- Phone — ONE element; JS-driven rect ---- */
@@ -153,7 +153,7 @@ const CSS = `
   .hsq-splash {
     position: absolute; inset: 0; z-index: 2;
     background: var(--flicker-brick, #c13441);
-    will-change: opacity;
+    will-change: opacity, transform;
   }
   /* Dynamic island — sits above splash AND the sliding app surface so it
      always reads as part of the device hardware, never moves, and overlaps
@@ -171,7 +171,7 @@ const CSS = `
   }
   .hsq-lotties {
     position: absolute; inset: 0; z-index: 4; background: #FFF8F6;
-    transform-origin: 50% 100%;
+    transform-origin: 100% 50%;
     will-change: opacity, transform;
   }
   .hsq-lottie { position: absolute; inset: 0; will-change: opacity; }
@@ -191,7 +191,7 @@ const CSS = `
   .hsq-copy-beat {
     position: absolute; top: 0; left: 0; right: 0;
     margin: 0; font-family: var(--font-sans); font-weight: 500;
-    font-size: clamp(18px, 1.55vw, 25px); line-height: 1.5; letter-spacing: -0.005em;
+    font-size: var(--text-base); line-height: 1.5; letter-spacing: -0.005em;
     transform: translateY(-50%); will-change: opacity;
   }
   .hsq-word { color: #BCB4AD; }
@@ -206,13 +206,13 @@ const CSS = `
   .hsq-rail-fill { position: absolute; top: 0; left: 0; right: 0; height: 0%; background: var(--flicker-body); border-radius: 2px; will-change: height; }
   .hsq-rail-labels { position: relative; flex: 1 1 auto; min-height: 84px; }
   .hsq-rail-beat { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); will-change: opacity; }
-  .hsq-rail-step { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--flicker-ink-mute, #7a6b6f); margin: 0 0 6px 0; }
-  .hsq-rail-title { font-family: var(--font-serif-display, var(--font-serif)); font-weight: 600; font-size: clamp(17px, 1.4vw, 22px); line-height: 0.95; letter-spacing: -0.03em; color: var(--flicker-body, #22191b); margin: 0; text-wrap: balance; }
+  .hsq-rail-step { font-family: var(--font-sans); font-size: var(--text-base); font-weight: 500; color: var(--flicker-ink-mute, #7a6b6f); margin: 0 0 12px 0; }
+  .hsq-rail-title { font-family: var(--font-serif-display, var(--font-serif)); font-weight: 600; font-size: clamp(var(--text-lg), 1.8vw, var(--text-xl)); line-height: var(--leading-heading); letter-spacing: -0.03em; color: var(--flicker-body, #22191b); margin: 0; text-wrap: balance; }
 
   /* ---- Bottom chrome (hero only; fades out during morph) ---- */
   .hsq-chrome {
     position: absolute; bottom: 28px; z-index: 25; display: flex; align-items: center; gap: 10px;
-    font-family: var(--font-sans); font-size: 12px; font-weight: 500; text-transform: uppercase;
+    font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 500; text-transform: uppercase;
     color: var(--ink-muted, #7a6b6f); will-change: opacity;
   }
   .hsq-stat { left: clamp(16px, 2vw, 56px); letter-spacing: 0.06em; }
@@ -237,6 +237,7 @@ export function HeroSequenceV7() {
   const lottieWrapRef = useRef(null);
   const copyColRef = useRef(null);
   const railColRef = useRef(null);
+  const railTrackRef = useRef(null);
   const railFillRef = useRef(null);
   const statRef = useRef(null);
   const scrollRef = useRef(null);
@@ -293,7 +294,12 @@ export function HeroSequenceV7() {
           loop: false,
           autoplay: false,
           path: b.path,
-          rendererSettings: { preserveAspectRatio: "xMidYMid meet", progressiveLoad: false }
+          // "none" stretches the 412×917 Lottie to fill the screen aperture on
+          // BOTH axes: it keeps the full width (no left/right bands) while
+          // compressing the height to sit within the frame (no top/bottom crop).
+          // The aperture is only ~5% taller per its ratio, so the vertical squish
+          // is imperceptible.
+          rendererSettings: { preserveAspectRatio: "none", progressiveLoad: false }
         });
         a.addEventListener("DOMLoaded", () => {
           ready[i] = true;
@@ -372,19 +378,20 @@ export function HeroSequenceV7() {
       if (statRef.current) statRef.current.style.opacity = String(chromeOp);
       if (scrollRef.current) scrollRef.current.style.opacity = String(chromeOp);
 
-      // In-app screen transition: the splash holds steady (logo gently fades),
-      // while the app surface SLIDES UP from below over it — the same motion
-      // iOS uses for a presented screen. Tied to the phone proxy so it resolves
-      // as the phone settles into the centre of the stage.
+      // In-app screen transition: a horizontal SWIPE LEFT — the app surface
+      // glides in from the right edge while the brick splash slides off to the
+      // left, the way a carousel advances. Both are tied to the phone proxy, so
+      // scrolling back up reverses the swipe (app exits right, splash returns).
       if (splashRef.current) {
         const sp = clamp01((mPhone - 0.05) / 0.4);
         splashRef.current.style.opacity = String(1 - sp);
+        splashRef.current.style.transform = `translateX(${-sp * 100}%)`;
       }
       if (lottieWrapRef.current) {
         const lp = clamp01(mPhone / 0.5);
-        const ty = (1 - lp) * 100;
+        const tx = (1 - lp) * 100;
         lottieWrapRef.current.style.opacity = "1";
-        lottieWrapRef.current.style.transform = `translateY(${ty}%)`;
+        lottieWrapRef.current.style.transform = `translateX(${tx}%)`;
       }
 
       const colOp = clamp01((mPanel - 0.55) / 0.45);
@@ -472,11 +479,19 @@ export function HeroSequenceV7() {
         revealWords(beat, 1.0, inDelay);
         // Play from the start and stop dead at the 1.80s frame.
         beatTweens.push(gsap.delayedCall(inDelay, () => playBeatLottie(beat)));
+        // The progress bar fades in WITH its adjacent label (same delay), so it
+        // never appears alone during the phone morph — only once the content
+        // sitting next to it lands.
+        if (railTrackRef.current) beatTweens.push(gsap.to(railTrackRef.current, {
+          opacity: 1, duration: 0.5, delay: inDelay, ease: "power2.out"
+        }));
         if (railFillRef.current) beatTweens.push(gsap.to(railFillRef.current, {
           height: ((beat + 1) / BEATS.length) * 100 + "%", duration: 0.7, delay: inDelay, ease: "power2.inOut"
         }));
-      } else if (railFillRef.current) {
-        beatTweens.push(gsap.to(railFillRef.current, { height: "0%", duration: 0.5, ease: "power2.inOut" }));
+      } else {
+        // Returning to the hero — fade the bar out alongside the labels.
+        if (railTrackRef.current) beatTweens.push(gsap.to(railTrackRef.current, { opacity: 0, duration: 0.45, ease: "power2.inOut" }));
+        if (railFillRef.current) beatTweens.push(gsap.to(railFillRef.current, { height: "0%", duration: 0.5, ease: "power2.inOut" }));
       }
     };
 
@@ -590,7 +605,8 @@ export function HeroSequenceV7() {
       const hideAtStart = [
         copyBeatRefs[0].current, copyBeatRefs[1].current, copyBeatRefs[2].current,
         railBeatRefs[0].current, railBeatRefs[1].current, railBeatRefs[2].current,
-        holderRefs[0].current, holderRefs[1].current, holderRefs[2].current
+        holderRefs[0].current, holderRefs[1].current, holderRefs[2].current,
+        railTrackRef.current
       ].filter(Boolean);
       gsap.set(hideAtStart, { opacity: 0 });
 
@@ -734,7 +750,7 @@ export function HeroSequenceV7() {
 
         {/* How-it-works step rail (right) */}
         <div ref={railColRef} className="hsq-rail" style={{ opacity: 0 }}>
-          <div className="hsq-rail-track"><div ref={railFillRef} className="hsq-rail-fill" /></div>
+          <div ref={railTrackRef} className="hsq-rail-track" style={{ opacity: 0 }}><div ref={railFillRef} className="hsq-rail-fill" /></div>
           <div className="hsq-rail-labels">
             {BEATS.map((b, i) =>
             <div key={i} ref={railBeatRefs[i]} className="hsq-rail-beat" style={{ opacity: i === 0 ? 1 : 0 }}>
@@ -751,7 +767,7 @@ export function HeroSequenceV7() {
             <div ref={splashRef} className="hsq-splash">
               <div className="hsq-logo" dangerouslySetInnerHTML={{ __html: FLICKER_MARK }} />
             </div>
-            <div ref={lottieWrapRef} className="hsq-lotties" style={{ opacity: 0, transform: "translateY(100%)" }}>
+            <div ref={lottieWrapRef} className="hsq-lotties" style={{ opacity: 0, transform: "translateX(100%)" }}>
               {BEATS.map((b, i) =>
               <div key={i} ref={holderRefs[i]} className="hsq-lottie" role="img"
                 aria-label="A demonstration of the Flicker app reading experience"

@@ -42,8 +42,8 @@ const MEMBER_CTA_CSS = `
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: 65px;
-    line-height: 0.9;
+    font-size: var(--text-4xl);
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     text-align: center;
     text-wrap: balance;
@@ -59,7 +59,7 @@ const MEMBER_CTA_CSS = `
     gap: 12px;
     padding: 18px 30px;
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -83,7 +83,7 @@ const MEMBER_CTA_CSS = `
   .mcta-join {
     margin-top: clamp(34px, 5vh, 52px);
     padding: 21px 28px;
-    font-size: 15px;
+    font-size: var(--text-base);
     letter-spacing: -0.005em;
     text-transform: none;
     background: var(--flicker-canvas);
@@ -135,7 +135,7 @@ const MEMBER_CTA_CSS = `
     align-items: center;
     gap: 10px;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -153,7 +153,7 @@ const MEMBER_CTA_CSS = `
     max-width: 16ch;
     font-family: var(--font-sans);
     font-weight: 500;
-    font-size: clamp(28px, 2.4vw, 38px);
+    font-size: clamp(var(--text-xl), 2.4vw, var(--text-2xl));
     line-height: 1.18;
     letter-spacing: -0.02em;
     color: #22191B;
@@ -164,7 +164,7 @@ const MEMBER_CTA_CSS = `
   .mcta-note {
     margin: clamp(48px, 8vh, 96px) 0 0;
     font-family: var(--font-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -219,7 +219,7 @@ export function MemberCTA() {
 
       <div className="mcta-top" ref={topRef}>
         <h2 className="mcta-heading">
-          <span className="dim" style={{ fontSize: "65px" }}>Become a member to </span><strong>unlock</strong><br />
+          <span className="dim" style={{ fontSize: "var(--text-4xl)" }}>Become a member to </span><strong>unlock</strong><br />
           <strong>the full library</strong><span className="dim"> today.</span>
         </h2>
 

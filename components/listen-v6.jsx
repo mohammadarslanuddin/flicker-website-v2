@@ -214,7 +214,7 @@ export function Listen({ children }) {
         <img className="ln-icon-img" src="flicker/audio-icon-container.svg" alt="" aria-hidden="true" width="68" height="68" />
 
         {/* Headline */}
-        <h2 className="ln-headline" style={{ fontWeight: "600", letterSpacing: "-0.03em", fontSize: "42px" }}>One click away from<br />your first listen.</h2>
+        <h2 className="ln-headline" style={{ fontWeight: "600", letterSpacing: "-0.03em", fontSize: "var(--text-2xl)" }}>One click away from<br />your first listen.</h2>
 
         {/* Inner card */}
         <div className="ln-inner">
@@ -224,22 +224,22 @@ export function Listen({ children }) {
               <img src="books/10.png" alt="The Courage to Be Disliked" />
             </div>
             <div className="ln-text" ref={textRef}>
-              <h3 className="ln-title" style={{ color: "rgb(33, 25, 27)", fontWeight: "600", letterSpacing: "-0.03em", fontSize: "22px" }}>The Courage to Be Disliked</h3>
-              <p className="ln-desc" style={{ fontSize: "16px" }}>An Adlerian dialogue on letting go of other people&rsquo;s approval, and finding the freedom to live life on your own terms, starting today.</p>
+              <h3 className="ln-title" style={{ color: "rgb(33, 25, 27)", fontWeight: "600", letterSpacing: "-0.03em", fontSize: "var(--text-lg)" }}>The Courage to Be Disliked</h3>
+              <p className="ln-desc" style={{ fontSize: "var(--text-base)" }}>An Adlerian dialogue on letting go of other people&rsquo;s approval, and finding the freedom to live life on your own terms, starting today.</p>
               <div className="ln-meta" data-comment-anchor="4f02e4b7a3-div-66-15">
                 <div className="ln-meta-item">
                   <i className="ph ph-star" aria-hidden="true" style={{ height: "18px", width: "19px", fontSize: "18px", textAlign: "center" }}></i>
                   <span className="ln-meta-tb">
-                    <span className="ln-meta-label" style={{ fontSize: "14px" }}>Rating</span>
-                    <span className="ln-meta-value" style={{ fontSize: "15px" }}>4.4 (108)</span>
+                    <span className="ln-meta-label" style={{ fontSize: "var(--text-sm)" }}>Rating</span>
+                    <span className="ln-meta-value" style={{ fontSize: "var(--text-base)" }}>4.4 (108)</span>
                   </span>
                 </div>
                 <div className="ln-meta-divider" aria-hidden="true"></div>
                 <div className="ln-meta-item">
                   <i className="ph ph-clock" aria-hidden="true" style={{ fontSize: "18px" }}></i>
                   <span className="ln-meta-tb">
-                    <span className="ln-meta-label" style={{ fontSize: "14px" }}>Reading</span>
-                    <span className="ln-meta-value" style={{ fontSize: "16px" }}>23 mins</span>
+                    <span className="ln-meta-label" style={{ fontSize: "var(--text-sm)" }}>Reading</span>
+                    <span className="ln-meta-value" style={{ fontSize: "var(--text-base)" }}>23 mins</span>
                   </span>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export function Listen({ children }) {
               <i className="ph-fill ph-pause" style={{ fontSize: "20px" }}></i>
             </span>
             <img className="ln-spectrum" src="flicker/audio-spectrum.svg" alt="" aria-hidden="true" />
-            <span className="ln-time" style={{ fontSize: "15px" }}>12:42</span>
+            <span className="ln-time" style={{ fontSize: "var(--text-base)" }}>12:42</span>
           </div>
         </div>
         </div>

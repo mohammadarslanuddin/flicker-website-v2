@@ -50,7 +50,7 @@ const NAV_STYLE = `
   .flk-bar-right{ display:flex; align-items:center; gap:14px; }
   /* Sign in — lives in the top bar next to the toggle. When the menu opens the
      dark container morphs in behind it and it INVERTS: same shape, flipped colors. */
-  .flk-signin{ padding:10px 22px !important; font-size:15px; font-weight:600;
+  .flk-signin{ padding:10px 22px !important; font-size:var(--text-base); font-weight:600;
     font-family:var(--font-sans);
     transition:background-color .3s var(--ease-out,ease),
                color .3s var(--ease-out,ease),
@@ -110,7 +110,7 @@ const NAV_STYLE = `
     display:flex; align-items:center;
     padding:4px 0; text-decoration:none;
     color:#FFFFFF;
-    font-family:var(--font-sans); font-weight:400; font-size:22px;
+    font-family:var(--font-sans); font-weight:400; font-size:var(--text-lg);
     line-height:1.2; letter-spacing:-0.01em;
     opacity:1; will-change:transform,opacity;
     transition:opacity .2s cubic-bezier(.22,1,.36,1);
@@ -123,14 +123,14 @@ const NAV_STYLE = `
   .flk-menu-divider{ height:1px; background:rgba(255,249,236,0.12); margin:16px 0 0; }
   .flk-menu-caption{
     margin:16px 0 6px; padding:0; font-family:var(--font-sans);
-    font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
+    font-size:var(--text-xs); font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
     color:rgba(255,249,236,0.42);
   }
   .flk-menu-caption:first-child{ margin-top:2px; }
   .flk-menu-sublink{
     position:relative;
     display:block; padding:3px 0; text-decoration:none;
-    font-family:var(--font-sans); font-weight:400; font-size:14px;
+    font-family:var(--font-sans); font-weight:400; font-size:var(--text-sm);
     color:#FFFFFF; opacity:1;
     transition:opacity .2s cubic-bezier(.22,1,.36,1);
   }
@@ -234,22 +234,22 @@ const NAV_STYLE = `
   }
   .flk-dock[data-open="true"] .flk-pill-prog{ opacity:0; }
   /* Get started — matches the top-bar "Sign in" secondary button */
-  .flk-dock-cta{ padding:11px 22px !important; font-size:15px; font-weight:600;
+  .flk-dock-cta{ padding:11px 22px !important; font-size:var(--text-base); font-weight:600;
     font-family:var(--font-sans); white-space:nowrap; }
 
   /* Menu body — single column, revealed below the header when open (light) */
   .flk-pill-body{ display:block; padding:6px 8px 16px 16px; }
-  .flk-body-cap{ margin:16px 0 6px; font-family:var(--font-sans); font-size:11px;
+  .flk-body-cap{ margin:16px 0 6px; font-family:var(--font-sans); font-size:var(--text-xs);
     font-weight:600; letter-spacing:0.14em; text-transform:uppercase;
     color:var(--flicker-ink-mute,#7A6B6F); }
   .flk-body-cap:first-child{ margin-top:2px; }
   .flk-body-div{ height:1px; background:var(--flicker-canvas-shade,#ECDFC4); margin:16px 0 0; }
   .flk-mlink{ position:relative; display:block; padding:4px 0; text-decoration:none;
-    font-family:var(--font-sans); font-weight:400; font-size:22px; letter-spacing:-0.01em;
+    font-family:var(--font-sans); font-weight:400; font-size:var(--text-lg); letter-spacing:-0.01em;
     color:var(--flicker-body,#22191B);
     transition:opacity .2s cubic-bezier(.22,1,.36,1); }
   .flk-slink{ position:relative; display:block; padding:3px 0; text-decoration:none;
-    font-family:var(--font-sans); font-weight:400; font-size:14px;
+    font-family:var(--font-sans); font-weight:400; font-size:var(--text-sm);
     color:var(--flicker-ink-soft,#3D3034);
     transition:opacity .2s cubic-bezier(.22,1,.36,1); }
   /* Hover/selection behavior mirrors the top-nav dropdown: hovering any item

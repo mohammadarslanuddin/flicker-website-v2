@@ -135,110 +135,208 @@
   --font-sans:  "Outfit", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
   --font-mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* Type scale — based on Tailwind's default but with display steps */
-  --text-xs:    0.75rem;      /*  12 */
-  --text-sm:    0.875rem;     /*  14 */
-  --text-base:  1rem;         /*  16 */
-  --text-lg:    1.125rem;     /*  18 */
-  --text-xl:    1.25rem;      /*  20 */
-  --text-2xl:   1.5rem;       /*  24 */
-  --text-3xl:   1.875rem;     /*  30 */
-  --text-4xl:   2.25rem;      /*  36 */
-  --text-5xl:   3rem;         /*  48 */
-  --text-6xl:   3.75rem;      /*  60 */
-  --text-7xl:   4.5rem;       /*  72 */
-  --text-8xl:   6rem;         /*  96 */
+  /* -----------------------------------------------------------
+     Type scale — MODULAR, Major Third (ratio 1.250), base 18px.
+     -----------------------------------------------------------
+     Single source of truth for every font-size on the page. Each step
+     is the previous one × 1.25 (or ÷ 1.25 going down), so the whole
+     ramp stays in proportion no matter how far it is extended.
 
-  /* Line-heights */
+     rem is authored as the canonical value (scales with the user's root
+     font preference); the trailing px note is the rendered size at the
+     default 16px root. Tailwind/shadcn step names are preserved so
+     existing var(--text-*) references keep resolving.
+
+       name   step      rem         px        ratio from base
+       2xs    r⁻²    0.72rem      11.52px     0.640×
+       xs     r⁻¹    0.9rem       14.40px     0.800×
+       sm     ~r⁻½   0.984rem     15.75px     0.875×   (practical body step)
+       base   r⁰     1.125rem     18.00px     1.000×   ← anchor
+       lg     r¹     1.406rem     22.50px     1.250×
+       xl     r²     1.758rem     28.13px     1.563×
+       2xl    r³     2.197rem     35.16px     1.953×
+       3xl    r⁴     2.747rem     43.95px     2.441×
+       4xl    r⁵     3.433rem     54.93px     3.052×
+       5xl    r⁶     4.291rem     68.66px     3.815×
+       6xl    r⁷     5.364rem     85.83px     4.768×
+       7xl    r⁸     6.706rem    107.29px     5.960×
+
+     `sm` (15.75px) is the one deliberate off-ratio step (0.875× base) —
+     the universally expected small-body size. Everything else is exactly
+     on the 1.25 ratio.                                                    */
+  --text-2xs:   0.72rem;      /* 11.52px — r⁻² · micro labels, legal, badges  */
+  --text-xs:    0.9rem;       /* 14.4px — r⁻¹ · captions, eyebrows, meta      */
+  --text-sm:    0.984rem;     /* 15.75px — half · small body, secondary copy  */
+  --text-base:  1.125rem;     /*   18px — r⁰  · body default                  */
+  --text-lg:    1.406rem;     /* 22.5px — r¹  · lead, large body, H6          */
+  --text-xl:    1.758rem;     /*   28px — r²  · H5 / sub-heading              */
+  --text-2xl:   2.197rem;     /*   35px — r³  · H4                            */
+  --text-3xl:   2.747rem;     /*   44px — r⁴  · H3 / section heading          */
+  --text-4xl:   3.433rem;     /*   55px — r⁵  · H2                            */
+  --text-5xl:   4.291rem;     /*   69px — r⁶  · H1                            */
+  --text-6xl:   5.364rem;     /*   86px — r⁷  · display                       */
+  --text-7xl:   6.706rem;     /*  107px — r⁸  · oversized hero display        */
+
+  /* Fluid display sizes — responsive clamps built on the same scale.
+     min = mobile floor, max = the scale step it lands on at desktop.       */
+  --text-fluid-display: clamp(2.197rem, 7vw + 1.125rem, 5.364rem);   /* 35 → 86 */
+  --text-fluid-h1:      clamp(2.197rem, 5vw + 1.125rem, 2.747rem);   /* 35 → 44 */
+  --text-fluid-h2:      clamp(1.758rem, 4vw + 0.5625rem, 2.197rem);  /* 28 → 35 */
+  --text-fluid-lead:    clamp(1.125rem, 1.4vw + 0.5625rem, 1.406rem);/* 18 → 22.5 */
+
+  /* Line-heights — pair tighter leading with larger steps.
+     Recommended pairing: display/headings → tight/snug; body → normal;
+     long-form → relaxed.                                                   */
+  --leading-none:    1;
   --leading-tight:   1.1;
+  --leading-heading: 1.125;  /* applied to all headings (t-display, t-h1…t-h6, t-quote) */
   --leading-snug:    1.25;
   --leading-normal:  1.5;
   --leading-relaxed: 1.65;
+
+  /* Letter-spacing — large display type tightens, small caps/eyebrows open. */
+  --tracking-tighter: -0.04em;
+  --tracking-tight:   -0.03em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.08em;
+  --tracking-wider:   0.12em;  /* eyebrows / overlines */
+
+  /* Font weights — Fraunces 300–900, Outfit 100–900.                       */
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
 }
 
 /* -------------------------------------------------------------
    5. Semantic typography classes
-   ------------------------------------------------------------- */
+   -------------------------------------------------------------
+   The applied hierarchy. Each class binds a role to a step on the
+   Perfect Fourth scale above — assign these to content rather than
+   hard-coding font sizes, so the whole page moves together if the
+   ratio or base ever changes.
+
+   Heading ramp (serif / Fraunces) — display → h1 → h2 → h3 → h4 → h5 → h6
+   Text ramp   (sans / Outfit)    — lead → body-lg → body → body-sm → caption
+   Accents                        — eyebrow (overline), quote (pull-quote)
+
+   Scale mapping (rendered px at 16px root):
+     display 38→120 (fluid) · h1 51 · h2 38 · h3 28 · h4 21 · h5 16 · h6 14
+     lead 21 · body-lg 18 · body 16 · body-sm 14 · caption 12 · eyebrow 12   */
+
 .t-display {
   font-family: var(--font-serif-display);
-  font-size: clamp(2.5rem, 6vw, 5rem);
-  line-height: 0.9;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: var(--text-fluid-display);   /* 38 → 120px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
   color: var(--flicker-body);
 }
 
 .t-h1 {
   font-family: var(--font-serif);
-  font-size: var(--text-5xl);
-  line-height: 0.9;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: var(--text-3xl);              /* 44px */
+  line-height: var(--leading-none);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .t-h2 {
   font-family: var(--font-serif);
-  font-size: var(--text-4xl);
-  line-height: 0.9;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: var(--text-2xl);              /* 38px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .t-h3 {
   font-family: var(--font-serif);
-  font-size: var(--text-2xl);
-  line-height: 0.9;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: var(--text-xl);               /* 28px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.t-h4 {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);               /* 21px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.t-h5 {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);             /* 16px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-normal);
+}
+
+.t-h6 {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);               /* 14px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-normal);
 }
 
 .t-eyebrow {
   font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: 600;
+  font-size: var(--text-xs);               /* 12px */
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-wider);
   color: var(--flicker-brick);
 }
 
 .t-lead {
   font-family: var(--font-sans);
-  font-size: var(--text-xl);
-  font-weight: 300;
-  line-height: 1.5;
+  font-size: var(--text-lg);               /* 21px */
+  font-weight: var(--weight-light);
+  line-height: var(--leading-normal);
   color: var(--flicker-ink-soft);
+}
+
+.t-body-lg {
+  font-family: var(--font-sans);
+  font-size: 1.266rem;                     /* 20.25px — large body */
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-relaxed);
+  color: var(--flicker-body);
 }
 
 .t-body {
   font-family: var(--font-sans);
-  font-size: var(--text-base);
-  font-weight: 400;
+  font-size: var(--text-base);             /* 16px */
+  font-weight: var(--weight-regular);
   line-height: 1.6;
   color: var(--flicker-body);
 }
 
 .t-body-sm {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: var(--text-sm);               /* 14px */
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
 }
 
 .t-caption {
   font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: var(--text-xs);               /* 12px */
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
   color: var(--flicker-ink-mute);
 }
 
 .t-quote {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: var(--text-2xl);
-  line-height: 0.9;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-size: var(--text-xl);               /* 28px */
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 /* -------------------------------------------------------------

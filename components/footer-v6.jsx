@@ -44,7 +44,7 @@ const FOOTER_CSS = `
 
   .site-footer .eyebrow {
     font-family: var(--f-sans);
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -65,8 +65,8 @@ const FOOTER_CSS = `
     margin: clamp(44px, 5.5vw, 84px) 0 0;
     font-family: var(--f-serif);
     font-weight: 600;
-    font-size: clamp(3.25rem, 12.5vw, 10rem);
-    line-height: 0.9;
+    font-size: clamp(var(--text-3xl), 12.5vw, var(--text-7xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--ink);
     text-align: center;
@@ -85,7 +85,7 @@ const FOOTER_CSS = `
     gap: 10px;
     padding: 17px 34px;
     font-family: var(--f-sans);
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 600;
     letter-spacing: -0.005em;
     line-height: 1;
@@ -126,7 +126,7 @@ const FOOTER_CSS = `
     margin: 0 0 22px;
     font-family: var(--f-sans);
     font-weight: 600;
-    font-size: clamp(19px, 1.6vw, 24px);
+    font-size: var(--text-lg);
     line-height: 1.12;
     letter-spacing: -0.04em;
     color: var(--ink);
@@ -150,7 +150,7 @@ const FOOTER_CSS = `
     background: none;
     color: var(--ink);
     font-family: var(--f-sans);
-    font-size: 15px;
+    font-size: var(--text-base);
     padding: 9px 0;
     outline: none;
   }
@@ -166,7 +166,7 @@ const FOOTER_CSS = `
     border-radius: var(--radius-full, 999px);
     padding: 10px 18px;
     font-family: var(--f-sans);
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 600;
     letter-spacing: -0.005em;
     cursor: pointer;
@@ -178,7 +178,7 @@ const FOOTER_CSS = `
     margin: 18px 0 0;
     max-width: 340px;
     font-family: var(--f-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     line-height: 1.55;
     color: var(--muted);
     text-wrap: pretty;
@@ -195,7 +195,7 @@ const FOOTER_CSS = `
   }
   .site-footer .footer-col ul a {
     font-family: var(--f-sans);
-    font-size: 15px;
+    font-size: var(--text-base);
     font-weight: 400;
     color: var(--ink-soft);
     text-decoration: none;
@@ -214,7 +214,7 @@ const FOOTER_CSS = `
   }
   .site-footer .footer-copyright {
     font-family: var(--f-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     letter-spacing: 0.02em;
     color: var(--muted);
   }
@@ -229,7 +229,7 @@ const FOOTER_CSS = `
   }
   .site-footer .footer-legal a {
     font-family: var(--f-sans);
-    font-size: 13.5px;
+    font-size: var(--text-sm);
     font-weight: 400;
     color: var(--ink-soft);
     text-decoration: none;
@@ -269,9 +269,9 @@ export function SiteFooter() {
             {/* Top CTA */}
             <div className="footer-cta">
               <p className="footer-eyebrow eyebrow">Join a growing library of<br />the world’s best ideas</p>
-              <h2 className="footer-heading" style={{ fontSize: "63px", fontFamily: 'var(--font-serif)', color: "rgb(82, 28, 31)", letterSpacing: "-0.03em", lineHeight: "0.9" }}>
-                <div><span style={{ color: "rgb(201, 26, 58)", fontSize: "63px" }}>One Idea, Every Week</span></div>
-                <div style={{ fontSize: "63px" }}>Habit-framed.</div>
+              <h2 className="footer-heading" style={{ fontSize: "var(--text-4xl)", fontFamily: 'var(--font-serif)', color: "rgb(82, 28, 31)", letterSpacing: "-0.03em", lineHeight: "var(--leading-heading)" }}>
+                <div><span style={{ color: "rgb(201, 26, 58)", fontSize: "var(--text-4xl)" }}>One Idea, Every Week</span></div>
+                <div style={{ fontSize: "var(--text-4xl)" }}>Habit-framed.</div>
               </h2>
               <div className="footer-cta-buttons">
                 <a href="#start" className="btn btn-primary">Become a member<span className="btn-arrow" aria-hidden="true"><i className="ph ph-arrow-right"></i></span></a>

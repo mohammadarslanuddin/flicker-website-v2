@@ -52,7 +52,7 @@
     gap: 12px;
     padding: 14px 28px;
     font-family: var(--font-sans);
-    font-size: 15px;
+    font-size: var(--text-base);
     font-weight: 600;
     letter-spacing: -0.005em;
     text-decoration: none;
@@ -111,7 +111,7 @@
     font-family: var(--font-serif-display);
     font-weight: 700;
     font-style: normal;
-    font-size: 72px;
+    font-size: var(--text-4xl);
     line-height: 1;
     letter-spacing: -0.03em;
     color: var(--flicker-canvas-shade);
@@ -209,7 +209,7 @@
     align-self: flex-start;
     align-items: center;
     font-family: var(--font-sans);
-    font-size: 9px;
+    font-size: var(--text-2xs);
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -222,9 +222,9 @@
   }
   .book-card-title {
     font-family: var(--font-serif);
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 600;
-    line-height: 0.9;
+    line-height: var(--leading-heading);
     color: var(--flicker-body);
     letter-spacing: -0.03em;
     margin: 0;
@@ -237,7 +237,7 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: 400;
     color: var(--flicker-ink-mute);
     line-height: 1.3;
@@ -310,8 +310,8 @@
     max-width: 920px;
     color: var(--ink);
     text-wrap: pretty;
-    line-height: 0.9;
-    font-size: 46px;
+    line-height: var(--leading-heading);
+    font-size: var(--text-3xl);
     font-family: var(--font-serif-display);
     font-weight: 600;
     letter-spacing: -0.03em;
@@ -367,7 +367,7 @@
     margin: 0;
     font-family: var(--font-sans);
     font-weight: 500;
-    font-size: clamp(16px, 1.25vw, 20px);
+    font-size: var(--text-base);
     line-height: 1.5;
     letter-spacing: -0.005em;
   }
@@ -417,7 +417,7 @@
   }
   .rail-step {
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 500;
     color: var(--flicker-ink-mute);
     margin: 0 0 6px 0;
@@ -426,8 +426,8 @@
   .rail-title {
     font-family: var(--font-serif-display);
     font-weight: 600;
-    font-size: clamp(22px, 1.9vw, 30px);
-    line-height: 0.9;
+    font-size: clamp(var(--text-lg), 1.9vw, var(--text-xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-body);
     margin: 0;
@@ -533,8 +533,8 @@
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: clamp(28px, 3vw, 44px);
-    line-height: 0.9;
+    font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     text-wrap: balance;
   }
@@ -544,7 +544,7 @@
     max-width: 560px;
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: clamp(17px, 1.4vw, 22px);
+    font-size: var(--text-base);
     line-height: 1.5;
     text-wrap: pretty;
     will-change: opacity, transform, filter;
@@ -670,8 +670,8 @@
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: 16px;
-    line-height: 0.9;
+    font-size: var(--text-base);
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-body);
     text-wrap: balance;
@@ -679,13 +679,13 @@
   .sw-author {
     margin: 6px 0 0 0;
     font-family: var(--font-sans);
-    font-size: 12.5px;
+    font-size: var(--text-xs);
     color: var(--flicker-ink-mute);
   }
   .sw-desc {
     margin: 6px 0 0 0;
     font-family: var(--font-sans);
-    font-size: 12.5px;
+    font-size: var(--text-base);
     line-height: 1.4;
     color: var(--flicker-ink-soft);
     text-wrap: pretty;
@@ -699,7 +699,7 @@
     background: rgba(155, 203, 251, 0.32);
     color: #1f4d80;
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: 600;
   }
   .sw-btn {
@@ -712,7 +712,7 @@
     background: var(--flicker-body);
     color: var(--flicker-canvas);
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     text-align: center;
     text-decoration: none;
@@ -832,8 +832,8 @@
     margin: 20px 0 0 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: 36px;
-    line-height: 0.9;
+    font-size: var(--text-2xl);
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-body);
     text-align: center;
@@ -872,8 +872,8 @@
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: 20px;
-    line-height: 0.9;
+    font-size: var(--text-lg);
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-cosmos);
   }
@@ -881,7 +881,7 @@
     margin: 8px 0 0 0;
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--text-sm);
     line-height: 1.5;
     color: var(--flicker-ink-soft);
   }
@@ -891,19 +891,19 @@
   /* Subtle vertical divider between the two info columns */
   .ln-meta-divider { flex: 0 0 auto; align-self: stretch; width: 1px; background: var(--flicker-canvas-shade); }
   .ln-meta-item { display: flex; align-items: center; gap: 8px; }
-  .ln-meta-item i { font-size: 14px; line-height: 1; color: var(--flicker-ink-mute); }
+  .ln-meta-item i { font-size: var(--text-sm); line-height: 1; color: var(--flicker-ink-mute); }
   .ln-meta-tb { display: flex; flex-direction: column; }
   .ln-meta-label {
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: 11px;
+    font-size: var(--text-xs);
     line-height: 1.3;
     color: var(--flicker-ink-mute);
   }
   .ln-meta-value {
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: 13px;
+    font-size: var(--text-sm);
     line-height: 1.3;
     color: var(--flicker-body);
   }
@@ -922,7 +922,7 @@
     justify-content: center;
     color: var(--flicker-body);
   }
-  .ln-pause i { font-size: 14px; line-height: 1; display: block; }
+  .ln-pause i { font-size: var(--text-sm); line-height: 1; display: block; }
   /* Provided spectrum SVG — stretches edge-to-edge in the row (no side gaps),
      placeholder until the real audio stream drives it. */
   .ln-spectrum { flex: 1 1 auto; min-width: 0; width: 100%; height: 48px; object-fit: fill; display: block; }
@@ -930,7 +930,7 @@
     flex: 0 0 auto;
     font-family: var(--font-sans);
     font-weight: 500;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--flicker-ink-soft);
   }
 
@@ -1035,7 +1035,7 @@
   .gw-avatar + .gw-avatar { margin-left: -14px; }
   .gw-badge-label {
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 400;
     color: var(--flicker-ink-soft);
     letter-spacing: -0.01em;
@@ -1046,8 +1046,8 @@
     margin: clamp(24px, 3.6vh, 42px) 0 0 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: clamp(28px, 3vw, 44px);
-    line-height: 0.9;
+    font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--ink);
     text-wrap: balance;
@@ -1057,7 +1057,7 @@
     max-width: 560px;
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: clamp(17px, 1.4vw, 22px);
+    font-size: var(--text-base);
     line-height: 1.5;
     text-wrap: pretty;
   }
@@ -1122,15 +1122,15 @@
     margin: 0;
     font-family: var(--font-serif);   /* Fraunces */
     font-weight: 600;
-    font-size: clamp(20px, 1.6vw, 25px);
-    line-height: 0.9;
+    font-size: clamp(var(--text-lg), 1.6vw, var(--text-xl));
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-body);
   }
   .gw-card-desc {
     margin: 10px 0 0 0;
     font-family: var(--font-sans);
-    font-size: clamp(13.5px, 1vw, 15px);
+    font-size: var(--text-base);
     line-height: 1.5;
     color: var(--flicker-ink-soft);
     text-wrap: pretty;
@@ -1157,8 +1157,8 @@
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 600;
-    font-size: 16px;
-    line-height: 0.9;
+    font-size: var(--text-base);
+    line-height: var(--leading-heading);
     letter-spacing: -0.03em;
     color: var(--flicker-body);
     white-space: nowrap;
@@ -1168,7 +1168,7 @@
   .gw-aud-sub {
     margin: 3px 0 0 0;
     font-family: var(--font-sans);
-    font-size: 12.5px;
+    font-size: var(--text-xs);
     color: var(--flicker-ink-mute);
     white-space: nowrap;
     overflow: hidden;
@@ -1177,7 +1177,7 @@
   .gw-aud-wave { display: flex; align-items: center; gap: 10px; }
   .gw-aud-time {
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-variant-numeric: tabular-nums;
     color: var(--flicker-ink-mute);
     flex-shrink: 0;
@@ -1221,7 +1221,7 @@
   .gw-ctl-main svg { width: 18px; height: 18px; }
   .gw-ctl-speed {
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--flicker-ink-soft);
     font-variant-numeric: tabular-nums;
