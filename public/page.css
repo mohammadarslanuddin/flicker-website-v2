@@ -728,9 +728,26 @@
     .sw-line, .sw-sub { opacity: 1 !important; filter: none !important; transform: none !important; }
     .sw-track { animation: none; }
   }
+  /* ---- Phones: one LARGE book at a time, neighbours peeking under the edge
+     gradients. Touch has no hover, so each card shows its expanded content
+     permanently (tint surface, shrunk cover, meta + button) — the same shape
+     the web reveals on hover. The hover JS is disabled on mobile (showcase-v6).
+     Titles/descriptions are line-clamped so the tall card stays inside the
+     carousel band. ---- */
   @media (max-width: 760px) {
-    .sw-item { width: 124px; }
-    .sw-track { gap: 14px; }
+    .sw-track { gap: clamp(14px, 4vw, 22px); }
+    .sw-item { width: clamp(248px, 76vw, 320px); }
+    .sw-card { padding: 14px; }
+    .sw-card-bg { opacity: 1; }
+    .sw-cover { width: 52%; }
+    .sw-meta { height: auto; opacity: 1; margin-top: 12px; }
+    .sw-btn { opacity: 1; }
+    .sw-title {
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .sw-desc {
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
   }
 
   /* =================================================================
@@ -939,6 +956,27 @@
 
   @media (prefers-reduced-motion: reduce) {
     .ln-panel { opacity: 1 !important; filter: none !important; transform: none !important; }
+  }
+
+  /* ---- Phones: let the two-line headline wrap (it is white-space:nowrap by
+     default so the segments never break mid-phrase on desktop), and ease the
+     inner card padding so the cover + text row isn't cramped. ---- */
+  @media (max-width: 680px) {
+    .ln-headline { white-space: normal; }
+    .ln-inner { margin-top: 40px; padding: 18px; gap: 22px; }
+    /* Book image + text side by side (sizing handed to CSS — see listen-v6.jsx).
+       The cover is a fixed width and the text TRUNCATES, so the row — and the
+       white inner-card — never push past the panel / viewport edge. */
+    .ln-bookinfo { align-items: flex-start; gap: 14px; }
+    .ln-cover { width: 100px; }
+    .ln-cover img { height: auto; }
+    .ln-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ln-desc  { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    /* Slim the waveform so the play button (before) and the time (after) keep
+       clear room on either side. */
+    .ln-audio { gap: 10px; }
+    .ln-pause { width: 44px !important; height: 44px !important; }
+    .ln-spectrum { flex: 1 1 0; min-width: 0; margin: 0 2px; }
   }
 
   /* =================================================================
