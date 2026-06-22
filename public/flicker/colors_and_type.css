@@ -209,6 +209,36 @@
   --weight-bold:     700;
 }
 
+/* -----------------------------------------------------------
+   Phone type scale (≤600px) — COMPRESSED ramp.
+   -----------------------------------------------------------
+   The desktop ramp above is anchored at 18px with a 1.25 (major-third)
+   ratio, which makes section headings (44–69px) and even body (18px) read
+   far too large on a ~390px phone. Here we re-declare the SAME token names
+   with a phone anchor of 16px and a gentler ~1.18 ratio, so the whole page —
+   every `var(--text-*)` and every `clamp(--text-a, …, --text-b)` floor/ceil —
+   shrinks proportionally with no per-component edits. The upper steps are
+   eased the most (where the desktop ramp overshoots a phone the worst); the
+   small steps barely move so captions/meta stay legible. Body lands at 16px,
+   the universally expected mobile reading size.
+   (rendered px noted at the 16px root)                                      */
+@media (max-width: 600px) {
+  :root {
+    --text-2xs:  0.66rem;   /* 10.6px */
+    --text-xs:   0.78rem;   /* 12.5px */
+    --text-sm:   0.875rem;  /* 14px   */
+    --text-base: 1rem;      /* 16px   ← phone anchor */
+    --text-lg:   1.15rem;   /* 18.4px */
+    --text-xl:   1.35rem;   /* 21.6px */
+    --text-2xl:  1.6rem;    /* 25.6px */
+    --text-3xl:  1.9rem;    /* 30.4px */
+    --text-4xl:  2.2rem;    /* 35.2px */
+    --text-5xl:  2.6rem;    /* 41.6px */
+    --text-6xl:  3.05rem;   /* 48.8px */
+    --text-7xl:  3.6rem;    /* 57.6px */
+  }
+}
+
 /* -------------------------------------------------------------
    5. Semantic typography classes
    -------------------------------------------------------------

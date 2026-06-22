@@ -362,7 +362,20 @@ export function HeroSequenceV7() {
       const heroPanel = { l: mH, tp: VH * 0.70, w: VW - 2 * mH, h: VH * 0.38 };
 
       const hpW = clampN(248, VW * 0.276, 540);
-      const heroPhone = { l: VW / 2 - hpW / 2, tp: VH * 0.56, w: hpW, h: hpW * PHONE_AR };
+      // RESTING hero phone. Desktop keeps the phone high (top at 56% VH) so it
+      // reads large under the centred copy. Phones drop it toward the bottom so
+      // it only PEEKS up from the lower ~quarter of the screen — but not so far
+      // that the brick-splash Flicker mark (positioned 25.7% down the phone)
+      // crops under the fold. We anchor the phone by that logo: its bottom edge
+      // keeps a 5% VH clearance above the viewport bottom, so it always reads
+      // clearly while the phone sits as low as that constraint allows.
+      const heroPhoneH = hpW * PHONE_AR;
+      let heroPhoneTop = VH * 0.56;
+      if (VW <= 600) {
+        const logoBottom = 0.257 * heroPhoneH + 0.1894 * hpW; // logo top% · h + logo height
+        heroPhoneTop = VH - logoBottom - VH * 0.05;
+      }
+      const heroPhone = { l: VW / 2 - hpW / 2, tp: heroPhoneTop, w: hpW, h: heroPhoneH };
 
       const narrow = VW <= 900;
       const hiwMH = clampN(40, VW * 0.12, 240);
