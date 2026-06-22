@@ -142,7 +142,7 @@ const CSS = `
   .hsq-ctas .cta-secondary img { display: block; border-radius: 7px; }
 
   /* ---- Phone — ONE element; JS-driven rect ---- */
-  .hsq-phone { position: absolute; z-index: 12; will-change: left, top, width, height; }
+  .hsq-phone { position: absolute; z-index: 12; will-change: transform; }
   .hsq-frame {
     position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 2;
     filter: drop-shadow(0 40px 80px rgba(34, 25, 27, 0.22));
@@ -175,6 +175,17 @@ const CSS = `
     position: absolute; inset: 0; z-index: 4; background: #FFF8F6;
     transform-origin: 100% 50%;
     will-change: opacity, transform;
+    /* The three app-screen Lotties are SVG (canvas can't render their mattes)
+       and together create ~8.5k DOM nodes — ~90% of the page. The smoother
+       re-composites everything every scroll frame, so while this is on screen
+       it dominates the frame budget; profiling showed it as ~83% of mobile
+       scroll cost. content-visibility lets the browser SKIP rendering this
+       subtree entirely whenever it's scrolled off-screen (which is the whole
+       page except the hero), cutting lower-page scroll cost ~4x with zero
+       visual change. Size is fixed by inset:0, so containment can't shift
+       layout; contain-intrinsic-size is just the skipped-state placeholder. */
+    content-visibility: auto;
+    contain-intrinsic-size: 360px 800px;
   }
   .hsq-lottie { position: absolute; inset: 0; will-change: opacity; }
   .hsq-lottie svg, .hsq-lottie canvas { display: block; width: 100% !important; height: 100% !important; }
@@ -346,6 +357,20 @@ export function HeroSequenceV7() {
     let unlockCall = null;
     let beatTweens = [];
 
+    // ---- Scroll lock (the step machine's grip on the page) ----
+    // With ScrollSmoother's normalizeScroll ON, a little scroll can leak past
+    // the hero's preventDefault hijack; that leak creeps the short hero pin to
+    // its end and fires onLeave *before* the user has stepped through all three
+    // How-it-works beats — so the last step gets skipped. Freezing the smoother
+    // while the machine is stepping makes the grip absolute (nothing moves until
+    // we explicitly release at the final step), independent of event ordering.
+    // No-op when no smoother exists (native-scroll mode) — the hijack alone
+    // already holds there. Resume is called on EVERY exit path so the page can
+    // never get stuck frozen.
+    const getSmoother = () =>
+      (typeof ScrollSmoother !== "undefined" && ScrollSmoother.get) ? ScrollSmoother.get() : null;
+    const lockScroll = (locked) => { const sm = getSmoother(); if (sm && sm.paused) sm.paused(locked); };
+
     // ---- Morph proxies (hero 0 ⇄ how-it-works 1) ----
     // `panel` drives the background container; `phone` trails it (see setMorph),
     // so the two never transition on the same curve.
@@ -446,6 +471,15 @@ export function HeroSequenceV7() {
       const ipW = ipH / PHONE_AR;
       const hiwPhone = { l: VW / 2 - ipW / 2, tp: ipTop, w: ipW, h: ipH };
 
+      // The phone keeps a CONSTANT aspect ratio across hero ⇄ how-it-works, so
+      // the whole transition is a uniform scale + translate. Give the phone a
+      // single fixed layout box (the larger of the two widths, so we only ever
+      // scale DOWN — crisp canvas, no upscale blur) and let renderMorph drive it
+      // with a GPU transform instead of re-laying-out left/top/width/height
+      // every frame (the latter reflows the drop-shadow-filtered SVG per frame).
+      const basePhoneW = Math.max(heroPhone.w, hiwPhone.w);
+      const basePhone = { l: heroPhone.l, tp: heroPhone.tp, w: basePhoneW, h: basePhoneW * PHONE_AR };
+
       // Expose the live phone half-width AND the panel's inner edge inset
       // so the left/right columns can stay symmetric, with padding measured
       // from inside the rounded panel (NOT the viewport edge).
@@ -465,12 +499,24 @@ export function HeroSequenceV7() {
         pinRef.current.style.setProperty("--hsq-hiw-text-top", hiwTextTop + "px");
       }
 
-      return { heroPanel, heroPhone, hiwPanel, hiwPhone };
+      return { heroPanel, heroPhone, hiwPanel, hiwPhone, basePhone };
     };
 
     const setRect = (el, r) => {
       el.style.left = r.l + "px"; el.style.top = r.tp + "px";
       el.style.width = r.w + "px"; el.style.height = r.h + "px";
+    };
+
+    // Geometry is constant during a morph tween (only viewport changes move it),
+    // so measure ONCE and reuse the cached rects every frame — this keeps geom()
+    // (clamps + 6 per-frame style.setProperty writes to pinRef) out of the hot
+    // render path. Re-measured on resize and ScrollTrigger refresh. Measuring
+    // also pins the phone's fixed layout box so renderMorph can transform it.
+    let cachedGeom = null;
+    const measure = () => {
+      cachedGeom = geom();
+      const ph = phoneRef.current;
+      if (ph) { setRect(ph, cachedGeom.basePhone); ph.style.transformOrigin = "0 0"; }
     };
 
     // ---- MORPH renderer ----
@@ -483,12 +529,19 @@ export function HeroSequenceV7() {
     const renderMorph = () => {
       const panel = panelRef.current, phone = phoneRef.current;
       if (!panel || !phone) return;
-      const G = geom();
+      if (!cachedGeom) measure();
+      const G = cachedGeom;
       const mPanel = morph.panel;
       const mPhone = morph.phone;
 
       setRect(panel, lerpRect(G.heroPanel, G.hiwPanel, mPanel));
-      setRect(phone, lerpRect(G.heroPhone, G.hiwPhone, mPhone));
+      // Phone: uniform scale + translate off its fixed base box (GPU transform,
+      // no per-frame layout/reflow of the filtered SVG). AR is constant so
+      // scaleX === scaleY — the rect is reproduced exactly at both endpoints.
+      const cp = lerpRect(G.heroPhone, G.hiwPhone, mPhone);
+      const s = cp.w / G.basePhone.w;
+      phone.style.transform =
+        `translate(${cp.l - G.basePhone.l}px, ${cp.tp - G.basePhone.tp}px) scale(${s})`;
 
       // Phones: the full-bleed container squares its corners as it expands
       // (rounded hero panel → edge-to-edge section). Desktop keeps the CSS 40px.
@@ -654,12 +707,19 @@ export function HeroSequenceV7() {
     // should preventDefault); false means "let the page scroll" (release).
     const gesture = (dir) => {
       if (dir > 0) {
-        if (step === MAX) return locked;   // hold during the last reveal, else release
+        if (step === MAX) {
+          // At the final step: release the freeze so the page can scroll out to
+          // Summaries (unless a transition is still playing — hold until then).
+          if (!locked) lockScroll(false);
+          return locked;
+        }
+        lockScroll(true);                  // hold the pin while we advance a step
         goToStep(step + 1);
         return true;
       }
       if (dir < 0) {
         if (step === 0) return true;       // nothing above the hero — swallow
+        lockScroll(true);                  // hold while we step back
         goToStep(step - 1);
         return true;
       }
@@ -706,11 +766,11 @@ export function HeroSequenceV7() {
         pin: pinRef.current,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        onEnter: () => { engaged = true; },
-        onEnterBack: () => { engaged = true; step = MAX; }, // re-arm at the last beat
-        onLeave: () => { engaged = false; },
-        onLeaveBack: () => { engaged = false; },
-        onRefresh: renderMorph
+        onEnter: () => { engaged = true; lockScroll(true); },
+        onEnterBack: () => { engaged = true; step = MAX; lockScroll(true); }, // re-arm at the last beat
+        onLeave: () => { engaged = false; lockScroll(false); },
+        onLeaveBack: () => { engaged = false; lockScroll(false); },
+        onRefresh: () => { measure(); renderMorph(); }
       });
 
       loadTrigger = ScrollTrigger.create({
@@ -754,7 +814,7 @@ export function HeroSequenceV7() {
       build();
     }
 
-    const onResize = () => renderMorph();
+    const onResize = () => { measure(); renderMorph(); };
     window.addEventListener("resize", onResize);
     // Input hijack — capture phase + non-passive so we can preventDefault and
     // beat ScrollSmoother to the wheel/touch event.
@@ -767,6 +827,7 @@ export function HeroSequenceV7() {
 
     return () => {
       killed = true;
+      lockScroll(false); // never leave the page frozen if we unmount mid-step
       window.clearTimeout(idle);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("wheel", onWheel, { capture: true });

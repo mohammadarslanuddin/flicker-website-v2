@@ -109,11 +109,17 @@ export default function App() {
       content: "#smooth-content",
       smooth: 1.4,
       effects: false,
-      // Take over touch scrolling so the mobile address bar never shows/hides
-      // mid-scroll — that toolbar resize is what re-pins the Summaries section
-      // and causes the jitter. `true` lets ScrollSmoother apply its own defaults
-      // (debounce + the #smooth-content element it must normalize); the carousel
-      // is a pointer-drag (not a native scroller), so it keeps working.
+      // ON — JS-driven scroll. This keeps the mobile address bar from toggling
+      // mid-scroll, which is what shifts the pinned sections (the jitter). It
+      // used to be unusable because the JS scroll loop was heavy AND it broke
+      // the hero step machine; both are now fixed:
+      //   • Weight: the per-section cross-dissolve (the bulk of the per-frame
+      //     ScrollTrigger work) is skipped on phones, and the hero morph is a
+      //     GPU transform instead of a per-frame layout reflow.
+      //   • Step machine: the hero now freezes the smoother while it owns the
+      //     input (see lockScroll in hero-sequence-v7), so scroll can't leak
+      //     past the hijack and release the pin early — all three How-it-works
+      //     steps play, then the smoother is released to scroll out.
       normalizeScroll: true,
     });
     return () => {
@@ -126,7 +132,19 @@ export default function App() {
      seams, except pinned sections that opt out via data-no-autofade. */
   React.useEffect(() => {
     if (typeof ScrollTrigger === "undefined") return;
+    // Phones: skip the per-section cross-dissolve entirely. Each non-pinned
+    // section carries TWO scrubbed ScrollTriggers (fade-in + fade-out) that the
+    // smoother re-evaluates every frame; on mobile that per-frame tax is the
+    // main thing that made JS-driven (normalizeScroll) scrolling feel heavy.
+    // Dropping it leaves every section at full opacity — same content, just a
+    // hard cut at the seams instead of a fade (barely perceptible on a phone,
+    // and the pinned sections still run their own transitions). Desktop keeps
+    // the fades. Evaluated once on mount; a rotate across the breakpoint just
+    // keeps whichever mode it loaded in.
+    const isMobile = typeof window !== "undefined" && window.matchMedia &&
+      window.matchMedia("(max-width: 900px)").matches;
     const setup = () => {
+      if (isMobile) { ScrollTrigger.refresh(); return []; }
       const sections = Array.from(document.querySelectorAll("section[data-screen-label]"));
       const triggers = [];
       sections.forEach((section, i) => {
