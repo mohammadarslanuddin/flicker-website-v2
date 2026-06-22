@@ -223,9 +223,40 @@ const CSS = `
   .hsq-scroll-arrow { display: inline-flex; }
   .hsq-scroll-arrow i { display: block; font-size: 13px; line-height: 1; }
 
-  @media (max-width: 900px) { .hsq-copy { display: none; } }
-  @media (max-width: 680px) { .hsq-rail { display: none; } }
   @media (max-width: 720px) { .hsq-title { white-space: normal; } }
+
+  /* ---- ≤900px (the original "no side columns" breakpoint): the columns
+     can't flank the centred phone, so the step label + title and the copy
+     reflow into a centred block in the band below the (shrunk) phone. The
+     hero-state bottom chrome is dropped because it would otherwise sit on top
+     of the large hero phone. Above 900px the side columns return (see the
+     min-width:901px block below). ---- */
+  @media (max-width: 900px) {
+    .hsq-stat, .hsq-scroll { display: none; }
+
+    /* Keep the hero CTAs at their exact desktop footprint. When they wrap onto
+       separate rows the shorter button no longer stretches to the taller one,
+       so pin the height (desktop renders 54px) — width stays content-sized. */
+    .hsq-ctas .cta { min-height: 54px; }
+
+    .hsq-rail, .hsq-copy {
+      top: var(--hsq-hiw-text-top, 64%);
+      bottom: auto;
+      left: clamp(20px, 6vw, 48px);
+      right: clamp(20px, 6vw, 48px);
+      transform: none;
+      text-align: center;
+    }
+    .hsq-rail { justify-content: center; gap: 0; }
+    .hsq-rail-track { display: none; }
+    .hsq-rail-labels { flex: 1 1 auto; min-height: 0; }
+    .hsq-rail-beat { top: 0; transform: none; }
+    .hsq-rail-step { margin: 0 0 4px 0; }
+    .hsq-rail-title { font-size: var(--text-xl); }
+
+    .hsq-copy { top: calc(var(--hsq-hiw-text-top, 64%) + clamp(56px, 9vw, 76px)); }
+    .hsq-copy-beat { top: 0; transform: none; }
+  }
 
   /* On wider screens, pull the bottom chrome in from the viewport edges so it
      hugs the centered phone — same phone-gap rhythm (--hsq-pad) as the copy /
@@ -333,15 +364,32 @@ export function HeroSequenceV7() {
       const hpW = clampN(248, VW * 0.276, 540);
       const heroPhone = { l: VW / 2 - hpW / 2, tp: VH * 0.56, w: hpW, h: hpW * PHONE_AR };
 
+      const narrow = VW <= 900;
       const hiwMH = clampN(40, VW * 0.12, 240);
       // Second container's vertical gap, ×1.5 vs. the original (28/0.06/72) so
       // the how-it-works card sits with noticeably more room top and bottom.
       const hiwMV = clampN(42, VH * 0.09, 108);
-      const hiwPanel = { l: hiwMH, tp: hiwMV, w: VW - 2 * hiwMH, h: VH - 2 * hiwMV };
+      // Phones: the container expands to a FULL-BLEED section (no margin) and the
+      // morph squares its corners (see renderMorph). Desktop keeps the margined card.
+      const hiwPanel = narrow
+        ? { l: 0, tp: 0, w: VW, h: VH }
+        : { l: hiwMH, tp: hiwMV, w: VW - 2 * hiwMH, h: VH - 2 * hiwMV };
 
-      const ipH = Math.min(VH * 0.68, hiwPanel.h - VH * 0.10);
+      // Phones: shrink the phone and CENTRE the [phone + text] group as a unit
+      // (phone above, copy below) within the full-bleed section. Desktop keeps
+      // the phone centred with the copy/rail flanking it.
+      const phoneTextGap = clampN(16, VH * 0.025, 34);
+      let ipH, ipTop;
+      if (narrow) {
+        ipH = Math.min(VH * 0.42, hiwPanel.h - VH * 0.10);
+        const textBandH = clampN(150, VH * 0.30, 280);
+        ipTop = Math.max(VH * 0.04, (VH - (ipH + phoneTextGap + textBandH)) / 2);
+      } else {
+        ipH = Math.min(VH * 0.68, hiwPanel.h - VH * 0.10);
+        ipTop = VH / 2 - ipH / 2;
+      }
       const ipW = ipH / PHONE_AR;
-      const hiwPhone = { l: VW / 2 - ipW / 2, tp: VH / 2 - ipH / 2, w: ipW, h: ipH };
+      const hiwPhone = { l: VW / 2 - ipW / 2, tp: ipTop, w: ipW, h: ipH };
 
       // Expose the live phone half-width AND the panel's inner edge inset
       // so the left/right columns can stay symmetric, with padding measured
@@ -357,6 +405,8 @@ export function HeroSequenceV7() {
         // Bottom bound of the centred hero band = distance from the viewport
         // top down to the hero-state phone's top edge.
         pinRef.current.style.setProperty("--hsq-hero-foot", (VH - heroPhone.tp) + "px");
+        // Top of the mobile step/copy band = just below the (shrunk) phone.
+        pinRef.current.style.setProperty("--hsq-hiw-text-top", (ipTop + ipH + phoneTextGap) + "px");
       }
 
       return { heroPanel, heroPhone, hiwPanel, hiwPhone };
@@ -383,6 +433,11 @@ export function HeroSequenceV7() {
 
       setRect(panel, lerpRect(G.heroPanel, G.hiwPanel, mPanel));
       setRect(phone, lerpRect(G.heroPhone, G.hiwPhone, mPhone));
+
+      // Phones: the full-bleed container squares its corners as it expands
+      // (rounded hero panel → edge-to-edge section). Desktop keeps the CSS 40px.
+      if (window.innerWidth <= 900) panel.style.borderRadius = (40 * (1 - mPanel)) + "px";
+      else panel.style.borderRadius = "";
 
       // Hero content clears as the container starts to expand — a quick
       // slide-up + fade that completes within the first ~20% of the panel

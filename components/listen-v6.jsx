@@ -29,6 +29,14 @@ export function Listen({ children }) {
     if (!cover || !text || typeof ResizeObserver === "undefined") return;
     const RATIO = 640 / 940;
     const sync = () => {
+      // On phones the cover uses a fixed width and the text beside it is
+      // truncated (see the max-width:680px CSS). Syncing the cover height to
+      // the narrow text column would balloon it, so hand sizing back to CSS.
+      if (window.matchMedia && window.matchMedia("(max-width: 680px)").matches) {
+        cover.style.height = "";
+        cover.style.width = "";
+        return;
+      }
       const h = text.offsetHeight;
       cover.style.height = h + "px";
       cover.style.width = h * RATIO + "px";
@@ -208,7 +216,7 @@ export function Listen({ children }) {
       className="ln-section">
 
       <div ref={stageRef} className="ln-stage">
-      <div ref={panelRef} className="ln-panel" style={{ backgroundColor: "rgb(242, 240, 236)", padding: "64px 20px 20px", gap: "0px", width: "630px" }}>
+      <div ref={panelRef} className="ln-panel" style={{ backgroundColor: "rgb(242, 240, 236)", padding: "64px 20px 20px", gap: "0px", width: "min(630px, 100%)" }}>
         <div ref={frontRef} className="ln-face-front">
         {/* Top icon */}
         <img className="ln-icon-img" src="flicker/audio-icon-container.svg" alt="" aria-hidden="true" width="68" height="68" />

@@ -178,7 +178,10 @@ const MEMBER_CTA_V7_CSS = `
   @media (max-width: 900px) {
     .m7-card { grid-template-columns: 1fr; }
     .m7-info { order: 1; }
-    .m7-media { order: 2; min-height: clamp(280px, 56vw, 440px); }
+    /* Taller media half so the browser mockup floats bottom-right with the
+       same sky breathing-room above/left as the desktop split card (otherwise
+       the browser nearly fills the half and reads as cropped). */
+    .m7-media { order: 2; min-height: clamp(340px, 92vw, 460px); }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -289,6 +289,26 @@ const NAV_STYLE = `
   html.flk-cursor-on, html.flk-cursor-on *{ cursor:none !important; }
   html.flk-cursor-on [data-omelette-chrome],
   html.flk-cursor-on [data-omelette-chrome] *{ cursor:auto !important; }
+
+  /* ---- Phones: no floating dock. The main top bar (kept transparent, exactly
+     as before) IS the header for the whole page — it stays through the hero,
+     then past it behaves like the desktop dock: slides up + fades out on a
+     sustained scroll-down and slides back down + fades in on any scroll-up
+     (see the SiteNav scroll + hidden effects). ---- */
+  @media (max-width: 900px){
+    .flk-dock{ display:none !important; }
+  }
+
+  /* ---- Small phones: keep the hero top bar on one line (logo · Sign in ·
+     menu) without crowding. The full Sign-in pill + arrow needs ~342px of bar
+     width, so on narrow screens tighten the gutters, compact the pill and drop
+     its arrow so nothing wraps or overlaps the logo. ---- */
+  @media (max-width: 360px){
+    .flk-bar{ padding:18px 16px 16px; }
+    .flk-bar-right{ gap:8px; }
+    .flk-signin{ padding:9px 14px !important; white-space:nowrap; }
+    .flk-signin .cta-arrow{ display:none; }
+  }
 `;
 
 export function SiteNav() {
@@ -524,6 +544,10 @@ export function SiteNav() {
   }, [open]);
 
   useEffect(() => {
+    // Phones drop the floating dock and use the main header for the whole page.
+    const mqMobile = typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(max-width: 900px)") : null;
+
     const onUpd = (y, dir) => {
       // --- Scroll progress (0–100) through the whole page ---
       const max = typeof ScrollTrigger !== "undefined" && ScrollTrigger.maxScroll ?
@@ -533,38 +557,55 @@ export function SiteNav() {
       const pr = Math.round(p);
       if (pr !== progRef.current) {progRef.current = pr;setProgress(pr);}
 
-      // --- Dock reveal / bar hide threshold ---
-      // Fire once the hero is ≥70% SCROLLED (its top has travelled up past 70%
-      // of its own height), not only when it has almost fully left the screen.
-      // Measured from the hero's own rect so it holds for any hero height.
-      const hero = heroElRef.current ||
-      (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
-      const pastHero = hero ?
-      (() => {const r = hero.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.7;})() :
-      y > window.innerHeight * 0.7;
-
-      // The top bar lives only in the hero zone; it hides (current GSAP slide-up
-      // + fade) the instant the hero passes 70% scrolled.
-      if (pastHero !== barHiddenRef.current) {barHiddenRef.current = pastHero;setHidden(pastHero);}
-
       // Direction: trust the actual (smoothed) scroll-position delta first.
       // self.direction lags and STICKS to +1 (down) while ScrollSmoother eases
-      // through the long pinned sections, so relying on it meant the dock never
-      // revealed once you were inside the "How it works" pin (~30%+). dy is the
-      // real position movement this frame — reveal on any upward frame, and only
-      // fall back to ScrollTrigger's direction when the frame is perfectly flat.
+      // through the long pinned sections, so relying on it meant reveal logic
+      // never fired inside a pin. dy is the real position movement this frame.
       const dy = y - lastYRef.current;
       lastYRef.current = y;
       const goingUp = dy < 0 || (dy === 0 && dir != null && dir < 0);
 
-      let next = dockedRef.current;
-      if (!pastHero) {next = false;downAccRef.current = 0;}
-      else if (goingUp) {next = true;downAccRef.current = 0;}        // any scroll-up → reveal
-      else if (dy > 0) {
-        downAccRef.current += dy;
-        if (downAccRef.current > 50) next = false;                   // sustained down → hide
+      if (mqMobile && mqMobile.matches) {
+        // PHONES: no dock. The main header behaves like the DESKTOP DOCK — it
+        // reveals on any scroll-up and hides only after a SUSTAINED scroll-down
+        // (accumulator hysteresis), so ScrollSmoother's eased momentum deltas
+        // can't flip it every frame. The old ±2px per-frame test had no
+        // hysteresis: dy oscillates around zero as the smoother settles, so the
+        // bar toggled constantly and each toggle restarted an animated blur —
+        // that was the scroll jitter. In the hero it's always shown.
+        if (dockedRef.current) {dockedRef.current = false;setDocked(false);}
+        const heroM = heroElRef.current ||
+        (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
+        const pastHeroM = heroM ?
+        (() => {const r = heroM.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.7;})() :
+        y > window.innerHeight * 0.7;
+        let h = barHiddenRef.current;
+        if (!pastHeroM) {h = false;downAccRef.current = 0;}              // in the hero → always shown
+        else if (goingUp) {h = false;downAccRef.current = 0;}           // any scroll-up → reveal
+        else if (dy > 0) {
+          downAccRef.current += dy;
+          if (downAccRef.current > 50) h = true;                        // sustained down → hide
+        }
+        if (h !== barHiddenRef.current) {barHiddenRef.current = h;setHidden(h);}
+      } else {
+        // DESKTOP: the top bar lives in the hero zone (hides past it via the
+        // GSAP slide-up + fade), and the floating dock takes over below.
+        const hero = heroElRef.current ||
+        (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
+        const pastHero = hero ?
+        (() => {const r = hero.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.7;})() :
+        y > window.innerHeight * 0.7;
+        if (pastHero !== barHiddenRef.current) {barHiddenRef.current = pastHero;setHidden(pastHero);}
+
+        let next = dockedRef.current;
+        if (!pastHero) {next = false;downAccRef.current = 0;}
+        else if (goingUp) {next = true;downAccRef.current = 0;}        // any scroll-up → reveal
+        else if (dy > 0) {
+          downAccRef.current += dy;
+          if (downAccRef.current > 50) next = false;                   // sustained down → hide
+        }
+        if (next !== dockedRef.current) {dockedRef.current = next;setDocked(next);}
       }
-      if (next !== dockedRef.current) {dockedRef.current = next;setDocked(next);}
 
       // --- Auto-close the menu after scrolling a bit while it's open ---
       if (openRef.current) {
@@ -606,6 +647,11 @@ export function SiteNav() {
   useEffect(() => {
     const bar = barRef.current;
     if (!bar || typeof gsap === "undefined") return;
+    // Slide-up + fade for BOTH desktop (handing off to the floating dock) and
+    // phones (where the bar IS the page header). Transform + opacity only —
+    // both composite on the GPU, so the bar never repaints mid-scroll the way
+    // the old animated `filter: blur()` did (that forced a full-width repaint
+    // over ScrollSmoother's transformed content every frame → mobile jitter).
     if (hidden) {
       gsap.to(bar, { yPercent: -18, opacity: 0, duration: 0.35, ease: "power2.out",
         overwrite: true, onComplete: () => {bar.style.pointerEvents = "none";} });

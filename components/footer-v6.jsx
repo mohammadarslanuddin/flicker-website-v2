@@ -241,11 +241,19 @@ const FOOTER_CSS = `
 
   /* ---- Responsive ---- */
   @media (max-width: 900px) {
-    .site-footer .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px 28px; }
+    /* More breathing room between the footer's content groups on phones. */
+    .site-footer .footer-grid { grid-template-columns: 1fr 1fr; gap: 48px 32px; }
     .site-footer .footer-newsletter { grid-column: 1 / -1; }
+    /* Buttons adopt the hero CTA footprint (padding/height matches
+       hero-sequence-v7 .hsq-ctas .cta). */
+    .site-footer .btn { padding: 16px 40px; min-height: 54px; }
+    /* Email field fills the width and grows for easier tapping on phones. */
+    .site-footer .newsletter-form { width: 100%; min-height: 54px; padding: 13px 18px; }
+    .site-footer .newsletter-form input,
+    .site-footer .newsletter-form button { font-size: var(--text-base); }
   }
   @media (max-width: 560px) {
-    .site-footer .footer-grid { grid-template-columns: 1fr; }
+    .site-footer .footer-grid { grid-template-columns: 1fr; gap: 44px; }
     .site-footer .footer-bottom { grid-template-columns: 1fr; justify-items: start; gap: 16px; }
     .site-footer .footer-legal { grid-column: auto; justify-content: flex-start; }
     .site-footer .footer-brand { grid-column: auto; justify-self: start; }

@@ -184,6 +184,33 @@ const TM_CSS = `
     }
     .t7-card { position: static; left: auto; top: auto; width: 100%; opacity: 1; transform: none !important; }
   }
+
+  /* ---- Phones: same static stacked column as reduced motion ----
+     The cards fly in around the centred headline using vw/vh offsets, which
+     overlap and overflow on a narrow screen, so the section drops the pin and
+     renders as a normal column: headline, then the three quote cards. The
+     matching JS bails out of the pin/fly-in setup under the same condition. */
+  @media (max-width: 768px) {
+    .t7-word { color: #FFF9EC; }
+    .t7-pin {
+      height: auto; overflow: visible;
+      padding: clamp(80px, 12vh, 140px) clamp(20px, 5vw, 48px);
+    }
+    .t7-center {
+      position: static; top: auto; left: auto;
+      transform: none; width: auto; margin: 0 auto; padding: 0;
+    }
+    .t7-line, .t7-sub { opacity: 1 !important; filter: none !important; transform: none !important; }
+    .t7-cards {
+      position: static; inset: auto;
+      /* width:100% of the padded pin (not 94vw, which exceeds it and breaks the
+         auto-centering) + max-width, so the column sits dead-centre. */
+      margin: clamp(36px, 6vh, 56px) auto 0;
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    .t7-card { position: static; left: auto; top: auto; width: 100%; opacity: 1; transform: none !important; }
+  }
 `;
 
 export function TestimonialsV7() {
@@ -203,9 +230,14 @@ export function TestimonialsV7() {
     if (typeof ScrollTrigger === "undefined") return;
     const section = sectionRef.current;
     if (!section) return;
+    // Phones use the static stacked layout (see the max-width:768px CSS),
+    // so skip the pin + fly-in entirely here too — otherwise the cards would
+    // be left positioned/opacity-0 off-screen.
     const reduce = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
+    const narrow = window.matchMedia &&
+    window.matchMedia("(max-width: 768px)").matches;
+    if (reduce || narrow) return;
 
     let killed = false, st = null, entryTl = null, exitST = null, lastP = 0;
 

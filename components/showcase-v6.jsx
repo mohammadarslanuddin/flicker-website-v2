@@ -58,7 +58,13 @@ const SHADOW_LG = "0 12px 28px -8px hsl(345 30% 10% / 0.12), 0 4px 10px -3px hsl
 /* GSAP-morph a card open / closed. Driving size + tint + meta height in one
    eased timeline (instead of CSS transitions) keeps the open smooth and
    jump-free. killTweensOf guards against rapid enter/leave overlap. */
+// Phones show the card permanently expanded via CSS (no hover on touch), so
+// the hover-driven morph is disabled there to avoid fighting those styles.
+const swMobile = () => typeof window !== "undefined" && window.matchMedia &&
+  window.matchMedia("(max-width: 760px)").matches;
+
 function expandCard(item) {
+  if (swMobile()) return;
   // Suppress the hover-morph while the loop is being dragged — otherwise
   // every cover the pointer crosses would pop open mid-drag.
   if (item.closest(".sw-carousel")?.classList.contains("is-grabbing")) return;
@@ -79,6 +85,7 @@ function expandCard(item) {
   gsap.to(btn, { opacity: 1, duration: 0.3, delay: 0.4, ease: "power2.out" });
 }
 function collapseCard(item) {
+  if (swMobile()) return;
   const card = item.querySelector(".sw-card");
   const bg = item.querySelector(".sw-card-bg");
   const cover = item.querySelector(".sw-cover");
