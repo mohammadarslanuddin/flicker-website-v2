@@ -772,6 +772,7 @@ export function HeroV3({ tweaks, setTweak }) {
 
         {/* CTAs */}
         <div
+            className="hero-ctas"
             style={{
               marginTop: 36,
               display: "flex",

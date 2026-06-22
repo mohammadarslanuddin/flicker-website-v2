@@ -303,6 +303,11 @@ const NAV_STYLE = `
      menu) without crowding. The full Sign-in pill + arrow needs ~342px of bar
      width, so on narrow screens tighten the gutters, compact the pill and drop
      its arrow so nothing wraps or overlaps the logo. ---- */
+  /* ---- Phones: smaller header logo. ---- */
+  @media (max-width: 600px){
+    .flk-logo img{ height:22px; }
+  }
+
   @media (max-width: 360px){
     .flk-bar{ padding:18px 16px 16px; }
     .flk-bar-right{ gap:8px; }
