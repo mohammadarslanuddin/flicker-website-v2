@@ -224,6 +224,32 @@ const CSS = `
   .hsq-scroll-arrow i { display: block; font-size: 13px; line-height: 1; }
 
   @media (max-width: 720px) { .hsq-title { white-space: normal; } }
+  /* Phones: enlarge the hero headline. The base clamp floors near --text-3xl
+     (~30px once the type tokens shrink at 600px), which reads small for a
+     display headline — raise the floor + vw term (still capped at --text-6xl).
+     Scoped to 600px so tablet/desktop sizing is untouched. */
+  @media (max-width: 600px) {
+    .hsq-title { font-size: clamp(var(--text-4xl), 11vw, var(--text-6xl)); }
+    /* Tighten the headline on phones. The token scale bottoms out at
+       --tracking-tighter (-0.04em); this goes a touch beyond it. */
+    .hsq-title-a, .hsq-title-b { letter-spacing: -0.05em; }
+
+    /* Smaller hero CTAs on phones. Stack them one-per-row and stretch to the
+       full content width (out to the .hsq-hero-text 24px gutters). The parent
+       columns centre their children at content width, so opt the CTA row — and
+       its wrapper — into full width before stretching the buttons. Overrides
+       the ≤900px min-height/content-width. */
+    .hsq-head { align-self: stretch; }
+    .hsq-ctas { align-self: stretch; flex-direction: column; align-items: stretch; }
+    .hsq-ctas .cta {
+      width: 100%;
+      min-height: 0;
+      padding: 15px 26px;
+      font-size: var(--text-base);
+      justify-content: center;
+    }
+    .hsq-ctas .cta-secondary img { width: 20px; height: 20px; }
+  }
 
   /* ---- ≤900px (the original "no side columns" breakpoint): the columns
      can't flank the centred phone, so the step label + title and the copy
@@ -392,14 +418,30 @@ export function HeroSequenceV7() {
       // (phone above, copy below) within the full-bleed section. Desktop keeps
       // the phone centred with the copy/rail flanking it.
       const phoneTextGap = clampN(16, VH * 0.025, 34);
-      let ipH, ipTop;
+      let ipH, ipTop, hiwTextTop;
       if (narrow) {
-        ipH = Math.min(VH * 0.42, hiwPanel.h - VH * 0.10);
-        const textBandH = clampN(150, VH * 0.30, 280);
-        ipTop = Math.max(VH * 0.04, (VH - (ipH + phoneTextGap + textBandH)) / 2);
+        // Phones: anchor the phone to the TOP — a margin below the fixed header
+        // — and the copy band to the BOTTOM of the viewport (an even margin that
+        // mirrors the side gutters). The phone then grows to fill the space
+        // between the two, capped so it never gets wider than the side gutters.
+        const headerH = 96;                          // matches --hsq-header-h
+        const topMargin = clampN(16, VH * 0.03, 40); // gap below the header
+        // The text band (step + title + ~3-line paragraph) is essentially a
+        // fixed height — it's type, not a fraction of the viewport — so keep it
+        // near-constant. Scaling it with VH over-estimated on taller phones and
+        // left a gap below the copy.
+        const textBandH = clampN(132, VH * 0.02, 160);
+        const bottomMargin = clampN(20, VH * 0.045, 48);
+        const sideMargin = clampN(20, VW * 0.06, 48);
+        const textTop = VH - bottomMargin - textBandH;
+        ipTop = headerH + topMargin;
+        const availH = textTop - phoneTextGap - ipTop;
+        ipH = Math.min(availH, (VW - 2 * sideMargin) * PHONE_AR);
+        hiwTextTop = textTop;
       } else {
         ipH = Math.min(VH * 0.68, hiwPanel.h - VH * 0.10);
         ipTop = VH / 2 - ipH / 2;
+        hiwTextTop = ipTop + ipH + phoneTextGap;
       }
       const ipW = ipH / PHONE_AR;
       const hiwPhone = { l: VW / 2 - ipW / 2, tp: ipTop, w: ipW, h: ipH };
@@ -418,8 +460,9 @@ export function HeroSequenceV7() {
         // Bottom bound of the centred hero band = distance from the viewport
         // top down to the hero-state phone's top edge.
         pinRef.current.style.setProperty("--hsq-hero-foot", (VH - heroPhone.tp) + "px");
-        // Top of the mobile step/copy band = just below the (shrunk) phone.
-        pinRef.current.style.setProperty("--hsq-hiw-text-top", (ipTop + ipH + phoneTextGap) + "px");
+        // Top of the mobile step/copy band — bottom-anchored on phones (see
+        // hiwTextTop), just below the phone on desktop.
+        pinRef.current.style.setProperty("--hsq-hiw-text-top", hiwTextTop + "px");
       }
 
       return { heroPanel, heroPhone, hiwPanel, hiwPhone };

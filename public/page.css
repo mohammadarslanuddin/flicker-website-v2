@@ -95,6 +95,27 @@
     border-color: transparent;
   }
 
+  /* ---------- Mobile: smaller hero CTAs ----------
+     Stack the two buttons one-per-row and stretch them to an identical width
+     (row-wrap would size each line by its own content, giving unequal widths). */
+  @media (max-width: 600px) {
+    .hero-ctas {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .hero-ctas .cta {
+      width: 100%;
+      padding: 11px 20px;
+      font-size: var(--text-sm);
+      gap: 8px;
+      justify-content: center;
+    }
+    .hero-ctas .cta-secondary img {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
   /* ---------- Genre rows (How-it-works Phase-A horizontal scrub) ---------- */
   .genre-row {
     position: relative;
@@ -735,6 +756,12 @@
      Titles/descriptions are line-clamped so the tall card stays inside the
      carousel band. ---- */
   @media (max-width: 760px) {
+    /* Drop the per-frame backdrop blur on the edge gradients — re-blurring the
+       moving cover track every frame is a major source of scroll stutter on
+       phone GPUs. The gradient + mask still give a soft fade without it. */
+    .sw-carousel::before, .sw-carousel::after {
+      -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
     .sw-track { gap: clamp(14px, 4vw, 22px); }
     .sw-item { width: clamp(248px, 76vw, 320px); }
     .sw-card { padding: 14px; }

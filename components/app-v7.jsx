@@ -31,6 +31,13 @@ import { useTweaks } from "./tweaks-panel-v6";
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Flip);
 
+/* On phones the browser address bar shows/hides as you scroll, which changes
+   window.innerHeight and makes ScrollTrigger refresh + re-measure every pinned
+   section mid-scroll — the Summaries showcase (pinned, end based on innerHeight)
+   visibly jitters as a result. ignoreMobileResize tells ScrollTrigger to skip
+   those toolbar-driven height changes so pins stay stable while scrolling. */
+ScrollTrigger.config({ ignoreMobileResize: true });
+
 const TONES = {
   canvas: {
     bg: "#FFF9EC", bgRgb: "255, 249, 236",
@@ -102,7 +109,12 @@ export default function App() {
       content: "#smooth-content",
       smooth: 1.4,
       effects: false,
-      normalizeScroll: false,
+      // Take over touch scrolling so the mobile address bar never shows/hides
+      // mid-scroll — that toolbar resize is what re-pins the Summaries section
+      // and causes the jitter. `true` lets ScrollSmoother apply its own defaults
+      // (debounce + the #smooth-content element it must normalize); the carousel
+      // is a pointer-drag (not a native scroller), so it keeps working.
+      normalizeScroll: true,
     });
     return () => {
       if (smoother && smoother.kill) smoother.kill();
