@@ -50,6 +50,7 @@
     display: inline-flex;
     align-items: center;
     gap: 12px;
+    box-sizing: border-box;
     padding: 14px 28px;
     font-family: var(--font-sans);
     font-size: var(--text-base);
@@ -95,6 +96,14 @@
     border-color: transparent;
   }
 
+  /* Lock both hero CTAs to one height. The secondary button's 28px app icon
+     makes its line box taller than the primary's text/16px arrow, so without
+     this they differ by ~6px. 56px = 28px icon + 14px×2 padding.
+     Scoped to .hero-ctas so the nav's .cta sign-in pills keep their own size. */
+  .hero-ctas .cta {
+    min-height: 56px;
+  }
+
   /* ---------- Mobile: smaller hero CTAs ----------
      Stack the two buttons one-per-row and stretch them to an identical width
      (row-wrap would size each line by its own content, giving unequal widths). */
@@ -102,9 +111,12 @@
     .hero-ctas {
       flex-direction: column;
       align-items: stretch;
+      width: 100%;
     }
     .hero-ctas .cta {
       width: 100%;
+      /* 44px = 22px icon + 11px×2 padding (mobile scale) */
+      min-height: 44px;
       padding: 11px 20px;
       font-size: var(--text-sm);
       gap: 8px;
@@ -113,6 +125,41 @@
     .hero-ctas .cta-secondary img {
       width: 22px;
       height: 22px;
+    }
+
+    /* Hero title bumped three token steps up on mobile (3xl→6xl floor;
+       ceiling held at --text-7xl, the top of the scale). !important is
+       needed to beat the inline clamp set on the h1/em in hero-v6.jsx. */
+    .hero-headline {
+      font-size: clamp(var(--text-6xl), 12vw, var(--text-7xl)) !important;
+    }
+  }
+
+  /* ---------- Hero backdrop fog (canvas-color veil over the flying books) ----
+     A radial veil that fades the floating book covers into the page bg so the
+     centered headline stays legible. Desktop keeps a strong veil; on phones the
+     books are the main spectacle on a short viewport, so we thin the veil out
+     considerably to let more covers show through. */
+  .hero-backdrop-fog {
+    background:
+      radial-gradient(ellipse 92% 78% at 50% 52%,
+        rgba(var(--bg-rgb), 0.97) 0%,
+        rgba(var(--bg-rgb), 0.92) 14%,
+        rgba(var(--bg-rgb), 0.78) 30%,
+        rgba(var(--bg-rgb), 0.50) 50%,
+        rgba(var(--bg-rgb), 0.22) 72%,
+        rgba(var(--bg-rgb), 0.00) 92%);
+  }
+  @media (max-width: 600px) {
+    .hero-backdrop-fog {
+      background:
+        radial-gradient(ellipse 84% 70% at 50% 50%,
+          rgba(var(--bg-rgb), 0.80) 0%,
+          rgba(var(--bg-rgb), 0.62) 16%,
+          rgba(var(--bg-rgb), 0.40) 34%,
+          rgba(var(--bg-rgb), 0.18) 56%,
+          rgba(var(--bg-rgb), 0.05) 76%,
+          rgba(var(--bg-rgb), 0.00) 92%);
     }
   }
 
@@ -127,14 +174,17 @@
     display: inline-block;
     white-space: nowrap;
     will-change: transform;
-    /* Common style for all four rows — same weight, same style, same color. */
-    font-family: var(--font-serif-display);
+    /* Common style for all four rows — Outfit bold, large + faint (Figma). */
+    font-family: var(--font-sans);
     font-weight: 700;
     font-style: normal;
-    font-size: var(--text-4xl);
-    line-height: 1;
-    letter-spacing: -0.03em;
+    /* Anchored to the 1080p reference (58px); scales by height on desktop,
+       width-guarded so mobile stays at the floor (== previous behaviour). */
+    font-size: clamp(32px, min(5.37vh, 4.4vw), 80px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
     color: var(--flicker-canvas-shade);
+    opacity: 0.4;
   }
 
   /* ---------- Stacked book avatars (in the bottom-left tagline) ---------- */
@@ -156,6 +206,23 @@
   }
   .stat-stack-cover + .stat-stack-cover { margin-left: -6px; }
 
+  /* On mobile, hide the "2,300+ titles" tagline (with its book avatars)
+     entirely — the hero is too tight to carry it cleanly. */
+  @media (max-width: 600px) {
+    .hero-tagline {
+      display: none !important;
+    }
+    /* With the left tagline gone, center the "Scroll" swipe indicator across
+       the bottom. Span full width + center its flex content rather than using
+       translateX — GSAP animates this element's transform (y) on scroll, so a
+       CSS transform would be clobbered. */
+    .hero-scroll-ind {
+      left: 0 !important;
+      right: 0 !important;
+      justify-content: center;
+    }
+  }
+
   /* ---------- Book of the week card ----------
      Sits above the bottom-left tagline. Quiet warm canvas-soft surface, no
      shadow, hairline border \u2014 a piece of static editorial chrome, not a
@@ -167,14 +234,18 @@
        so it doesn't fight the GSAP entrance / hover-lift / scroll-fade
        transforms on the inner elements. */
     zoom: 1.125;
-    /* Anchored bottom-left, sitting just ABOVE the "2,300+ titles" tagline and
-       left-aligned to it. left/bottom are pre-divided by the zoom so the card's
-       visual edges hold (24px gutter, ~60px up) as the zoom changes. */
+    /* Anchored to the bottom-left corner. left/bottom are pre-divided by the
+       zoom so the card's visual edges hold (24px left gutter, 28px bottom) as
+       the zoom changes. */
     left: 21.333px;
-    bottom: 53.333px;
+    bottom: 24.889px;
     z-index: 26;
-    width: 296px;
-    max-width: calc(100vw - 72px);
+    /* Size to content so longer titles/genres aren't truncated — the card
+       grows with its text, bounded by a min (keeps the compact baseline) and
+       a max (keeps it off the viewport edge / from getting absurdly wide). */
+    width: max-content;
+    min-width: 296px;
+    max-width: min(420px, calc(100vw - 72px));
   }
   /* Lift wrapper — contains both the card link and the × button so the
      hover animation moves them as a unit. Shadow toggles on .is-lifted. */
@@ -230,7 +301,7 @@
     align-items: center;
     font-family: var(--font-sans);
     font-size: var(--text-2xs);
-    font-weight: 600;
+    font-weight: 400;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 3px 7px;
@@ -242,11 +313,11 @@
   }
   .book-card-title {
     font-family: var(--font-serif);
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     font-weight: 600;
     line-height: var(--leading-heading);
     color: var(--flicker-body);
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -295,6 +366,53 @@
     background: var(--flicker-canvas-shade);
     color: var(--flicker-body);
   }
+  /* Round reopen button — shows the book cover in a small circular chip after
+     the card is dismissed; click restores the card (which unmounts this). It
+     sits in the same bottom-left corner the card occupies. */
+  .book-reopen-btn {
+    position: absolute;
+    left: 24px;
+    bottom: 28px;
+    z-index: 26;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--flicker-canvas-shade);
+    background: var(--flicker-canvas-soft);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform, opacity;
+    transition: transform var(--dur-base) var(--ease-out),
+                box-shadow var(--dur-base) var(--ease-out);
+  }
+  .book-reopen-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .book-reopen-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Mobile: the scroll indicator spans the full width along the bottom, so lift
+     the book card (and its round reopen button) up to sit ABOVE it instead of
+     overlapping. This block lives AFTER the base .book-card-wrap/.book-reopen-btn
+     rules on purpose — a media query adds no specificity, so it must come later
+     in source order to win. bottom is pre-divided by the wrap's 1.125 zoom to
+     land at ~56px visual — a small ~13px gap above the scroll row. The reopen
+     button is a small chip at the far-left corner and the scroll text is
+     centered, so it doesn't overlap — it stays in the bottom-left corner. */
+  @media (max-width: 600px) {
+    .book-card-wrap {
+      bottom: 49.778px;
+    }
+  }
 
   /* =================================================================
      HOW IT WORKS — one continuous pinned section.
@@ -312,38 +430,53 @@
     height: 100vh;
     width: 100%;
     overflow: hidden;
+    /* Beats columns: reduced width. Each column is centered in its half-region
+       (panel-edge → phone-edge), so all four gaps across the row are equal.
+       --hiw-phone-half is set by JS (half the centered beats-phone width). */
+    --hiw-col-w: clamp(180px, 17vw, 360px);
   }
-  /* Genre scrub heading (top-left) — fades out during the morph. */
+  /* Section heading — CENTERED near the top (Figma). Fades out during the
+     morph. The main clause fills gray→ink on the genre scrub; the tail clause
+     stays de-emphasised. */
+  /* top + height are JS-driven to the band between the nav header bottom and
+     the mockup top; the heading is then centered within that band. */
   .hiw-heading {
     position: absolute;
-    top: 0; left: 0;
-    padding: 64px 24px;
-    max-width: 1100px;
+    top: 0; left: 0; right: 0;
+    padding: 0 24px;
     z-index: 6;
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     will-change: opacity, transform;
   }
   .hiw-heading .t-h1 {
     margin: 0;
-    max-width: 920px;
+    /* Size + wrap width scale together off the viewport, anchored to the
+       1920×1080 reference (44px / 660px), so the heading holds the same
+       proportions + line-break on every desktop size. min(vh,vw): wide screens
+       scale by height; portrait/mobile is guarded by width so it never oversizes. */
+    max-width: min(62vh, 90vw);
     color: var(--ink);
-    text-wrap: pretty;
+    text-wrap: balance;
     line-height: var(--leading-heading);
-    font-size: var(--text-3xl);
+    font-size: clamp(30px, min(4.07vh, 5.2vw), 60px);
     font-family: var(--font-serif-display);
     font-weight: 600;
     letter-spacing: -0.03em;
   }
-  /* Genre rows — full-bleed, parked toward the bottom; fade out during morph. */
+  /* Genre rows — full-bleed faint backdrop behind the phone (Figma); fade out
+     during morph. Centered vertically so the tiled words sit around the device. */
   .hiw-rows {
     position: absolute;
     left: 0; right: 0;
-    bottom: 60px;
+    bottom: clamp(40px, 5.5vh, 90px);
     z-index: 2;
     display: flex;
     flex-direction: column;
+    gap: 2px;
     will-change: opacity;
   }
   /* Warm-neutral stage panel. Geometry (left/top/width/height) is driven by
@@ -355,24 +488,25 @@
     border-radius: 22px;
     overflow: hidden;
     z-index: 8;
-    will-change: left, top, width, height;
+    will-change: opacity, transform;
   }
   /* Left + right columns live inside the panel and only appear once the
      panel is (almost) full. */
+  /* Positioning context for the two columns, which are anchored to the phone. */
   .hiw-grid {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 clamp(28px, 3.4vw, 64px);
   }
+  /* Left column — CENTERED within the region between the panel's left edge and
+     the phone's left edge, so panel→copy == copy→phone. Mirrored by .hiw-rail,
+     giving four equal gaps across the row (panel · copy · phone · rail · panel). */
   .hiw-copy {
-    position: relative;
-    flex: 0 0 auto;
-    width: clamp(150px, 16.8vw, 360px);
-    /* Comfortable margin from the panel edge; the taller phone owns the centre. */
-    transform: translateX(0);
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0;
+    right: calc(50% + var(--hiw-phone-half, 150px));
+    width: var(--hiw-col-w);
+    margin-inline: auto;
     will-change: opacity;
   }
   .hiw-copy-beat {
@@ -387,7 +521,7 @@
     margin: 0;
     font-family: var(--font-sans);
     font-weight: 500;
-    font-size: var(--text-base);
+    font-size: var(--text-lg);
     line-height: 1.5;
     letter-spacing: -0.005em;
   }
@@ -395,12 +529,15 @@
   /* Phase-A heading words start gray; JS fills them to ink on scroll. */
   .hiw-heading .hiw-fill-word { color: #BCB4AD; }
   /* Right column — vertical progress rail + step label. */
+  /* Right column — CENTERED within the region between the phone's right edge and
+     the panel's right edge (mirror of .hiw-copy), so phone→rail == rail→panel. */
   .hiw-rail {
-    position: relative;
-    flex: 0 0 auto;
-    width: clamp(150px, 16.8vw, 360px);
-    /* Matches the copy column width so the phone sits equidistant from both. */
-    transform: translateX(0);
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc(50% + var(--hiw-phone-half, 150px));
+    right: 0;
+    width: var(--hiw-col-w);
+    margin-inline: auto;
     display: flex;
     align-items: center;
     gap: 24px;
@@ -443,12 +580,8 @@
     margin: 0 0 6px 0;
     letter-spacing: 0;
   }
+  /* Composes onto .t-h4 (serif · text-lg · heading · 600 · tracking-tight). */
   .rail-title {
-    font-family: var(--font-serif-display);
-    font-weight: 600;
-    font-size: clamp(var(--text-lg), 1.9vw, var(--text-xl));
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
     color: var(--flicker-body);
     margin: 0;
     text-wrap: balance;
@@ -461,46 +594,72 @@
     z-index: 12;
     will-change: left, top, width, height;
   }
-  /* Looping product video — occupies the phone's rect while the box is parked
-     bottom-right, then crossfades into the 1st Lottie during the morph.
-     Corner radius matches the Lottie "app screen" frame (.phone-frame: 13% / 5.8%)
-     so the video and the Lottie animations share an identical screen rounding. */
-  .hiw-box-video {
+  /* Phone splash (intro) — red Flicker screen; slides left + fades on morph. */
+  .hiw-splash {
     position: absolute;
-    z-index: 13;
-    border-radius: 9% / 4%;
-    overflow: hidden;
-    /* Force the rounded corners to clip cleanly even though this is a
-       composited (will-change/transform) layer during scroll — without the
-       mask, the video bleeds a 1px line at each corner. */
-    isolation: isolate;
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
-    -webkit-mask-image: radial-gradient(white, black);
-    mask-image: radial-gradient(white, black);
-    pointer-events: none;
-    will-change: left, top, width, height, opacity;
+    inset: 0;
+    z-index: 2;
+    background: var(--flicker-brick, #c13441);
+    will-change: opacity, transform;
   }
-  .hiw-box-video > video {
-    display: block;
+  .hiw-logo {
+    position: absolute;
+    top: 25.7%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18.7%;
+    color: var(--flicker-canvas, #fff9ec);
+  }
+  /* Lottie beats wrapper — swipes in from the right as the splash leaves.
+     content-visibility keeps the heavy (~8.5k-node) SVG beats off the scroll
+     hot path whenever they're scrolled off-screen (mobile scroll-cost finding),
+     with zero visual change since the rect is fixed by inset:0. */
+  .hiw-lotties {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background: #FFF8F6;
+    transform-origin: 100% 50%;
+    /* No persistent will-change/transform layer here — the dense SVG must
+       rasterize at native resolution (crisp), not from a cached GPU layer.
+       The morph sets transform inline only while sliding in. */
+    content-visibility: auto;
+    contain-intrinsic-size: 360px 800px;
+  }
+  /* Dynamic island — overlays splash + beats so it always reads as hardware. */
+  .hiw-island {
+    position: absolute;
+    top: 1.6%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 31%;
+    aspect-ratio: 3.05 / 1;
+    background: #030303;
+    border-radius: 999px;
+    z-index: 10;
+  }
+  /* Screen window inside the device mockup — positioned to the app-container.svg
+     cutout; holds the splash + Lottie beats. Sits ABOVE the frame img so the
+     titanium bezel shows only around the edges. */
+  .hiw-screen {
+    position: absolute;
+    left: 3.8%; top: 1.9%;
+    width: 92.4%; height: 96.3%;
+    z-index: 3;
+    overflow: hidden;
+    border-radius: 13.2% / 6.4%;
+    background: var(--flicker-brick, #c13441);
+  }
+  /* Device mockup frame (titanium body + side buttons) — the real SVG, like the
+     archived design, so the splash + beats sit in an actual phone. */
+  .hiw-frame {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    border-radius: inherit;
-  }
-  .phone-frame {
-    position: absolute;
-    inset: 0;
-    background: #FFF8F6;
-    border-radius: 9% / 4%;
-    /* Soft drop shadow removed per request — only the screen-edge hairline remains. */
-    box-shadow: inset 0 0 0 1px rgba(34,25,27,0.06);
-    overflow: hidden;
-  }
-  .phone-screen {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    border-radius: inherit;
+    display: block;
+    z-index: 2;
+    filter: drop-shadow(0 40px 80px rgba(34, 25, 27, 0.22));
   }
   .lottie-holder {
     position: absolute;
@@ -512,11 +671,41 @@
     width: 100% !important;
     height: 100% !important;
   }
-  @media (max-width: 900px) {
-    .hiw-copy { display: none; }
-  }
-  @media (max-width: 680px) {
-    .hiw-rail { display: none; }
+  /* ---- Mobile "How it works": phone on TOP (connecting to the nav header),
+     written content in the light card BELOW it (reaching the bottom margin).
+     The phone + content-card rects are JS-driven (geom()'s mobile branch); these
+     rules re-flow the copy + rail INSIDE that bottom card as a vertical stack
+     (step + title, then the copy paragraph) instead of the desktop side columns.
+     The crossfading 3-beat mechanism is unchanged — only the boxes move. ---- */
+  @media (max-width: 760px) {
+    .hiw-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 0;
+      left: clamp(18px, 6vw, 30px);
+      right: clamp(18px, 6vw, 30px);
+      top: clamp(18px, 5vw, 26px);
+      bottom: auto;
+      width: auto;
+      height: clamp(74px, 14vw, 96px);
+      margin: 0;
+    }
+    /* The vertical progress bar doesn't fit the stacked layout — the
+       "Step 1/2/3:" label already carries the progress, so hide the rail. */
+    .hiw-rail .rail-track { display: none; }
+    .hiw-rail .rail-labels { min-height: 0; flex: 1 1 auto; }
+    .hiw-copy {
+      display: block;
+      left: clamp(18px, 6vw, 30px);
+      right: clamp(18px, 6vw, 30px);
+      top: calc(clamp(18px, 5vw, 26px) + clamp(74px, 14vw, 96px) + clamp(8px, 2vw, 14px));
+      bottom: clamp(18px, 5vw, 26px);
+      width: auto;
+      margin: 0;
+    }
+    .hiw-copy-beat p { font-size: var(--text-base); }
   }
 
   /* =================================================================
@@ -549,13 +738,11 @@
     z-index: 2;
     will-change: transform;
   }
+  /* Composes onto .t-h2 (serif · leading-heading · 600 · tracking-tight from
+     the base); this rule keeps only the responsive-clamp size delta. */
   .sw-h2 {
     margin: 0;
-    font-family: var(--font-serif);
-    font-weight: 600;
     font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
     text-wrap: balance;
   }
   .sw-line { display: block; will-change: opacity, transform, filter; }
@@ -871,13 +1058,12 @@
   }
 
   /* ---- Headline ---- */
+  /* Composes onto .t-h2 (serif · leading-heading · tracking-tight from the base);
+     this rule keeps only the deltas — heavier 700 weight + responsive clamp. */
   .ln-headline {
     margin: 20px 0 0 0;
-    font-family: var(--font-serif);
-    font-weight: 600;
-    font-size: var(--text-2xl);
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    font-size: clamp(var(--text-2xl), 2.6vw, var(--text-3xl));
     color: var(--flicker-body);
     text-align: center;
     /* Keep each <br>-separated segment on one line so the headline reads as
@@ -915,20 +1101,16 @@
   }
   .ln-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ln-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  /* Composes onto .t-h4 (serif · text-lg · heading · 600 · tracking-tight). The
+     card title is rendered in body ink (not cosmos) — that one delta stays. */
   .ln-title {
     margin: 0;
-    font-family: var(--font-serif);
-    font-weight: 600;
-    font-size: var(--text-lg);
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
-    color: var(--flicker-cosmos);
+    color: var(--flicker-body);
   }
+  /* Composes onto .t-body (sans · text-base · 400). Keeps the tighter 1.5
+     leading and the softer ink colour. */
   .ln-desc {
     margin: 8px 0 0 0;
-    font-family: var(--font-sans);
-    font-weight: 400;
-    font-size: var(--text-sm);
     line-height: 1.5;
     color: var(--flicker-ink-soft);
   }
@@ -943,14 +1125,14 @@
   .ln-meta-label {
     font-family: var(--font-sans);
     font-weight: 400;
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     line-height: 1.3;
     color: var(--flicker-ink-mute);
   }
   .ln-meta-value {
     font-family: var(--font-sans);
     font-weight: 600;
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     line-height: 1.3;
     color: var(--flicker-body);
   }
@@ -977,7 +1159,7 @@
     flex: 0 0 auto;
     font-family: var(--font-sans);
     font-weight: 500;
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     color: var(--flicker-ink-soft);
   }
 
@@ -991,11 +1173,10 @@
   @media (max-width: 680px) {
     .ln-headline { white-space: normal; }
     .ln-inner { margin-top: 40px; padding: 18px; gap: 22px; }
-    /* Book image + text side by side (sizing handed to CSS — see listen-v6.jsx).
-       The cover is a fixed width and the text TRUNCATES, so the row — and the
-       white inner-card — never push past the panel / viewport edge. */
-    .ln-bookinfo { align-items: flex-start; gap: 14px; }
-    .ln-cover { width: 100px; }
+    /* On mobile the cover and text STACK vertically (column) so the text gets
+       the full card width and never gets squeezed beside the image. */
+    .ln-bookinfo { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .ln-cover { width: 78px; }
     .ln-cover img { height: auto; }
     .ln-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .ln-desc  { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -1004,6 +1185,11 @@
     .ln-audio { gap: 10px; }
     .ln-pause { width: 44px !important; height: 44px !important; }
     .ln-spectrum { flex: 1 1 0; min-width: 0; margin: 0 2px; }
+    /* Centre the content-sized card in the phone viewport: the stage already
+       flex-centres the panel, but its default padding is bottom-heavy, which
+       nudges the card above centre. Equalising the vertical padding lets it
+       sit in the true middle of the screen. */
+    .ln-stage { padding: clamp(28px, 6vh, 64px) clamp(16px, 5vw, 28px); }
   }
 
   /* =================================================================
@@ -1110,13 +1296,11 @@
   }
   .gw-badge-label b { color: var(--flicker-body); font-weight: 700; }
 
+  /* Composes onto .t-h2 (serif · leading-heading · 600 · tracking-tight). Keeps
+     the responsive-clamp size, the tone-aware --ink colour, and its margin. */
   .gw-h2 {
     margin: clamp(24px, 3.6vh, 42px) 0 0 0;
-    font-family: var(--font-serif);
-    font-weight: 600;
     font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
     color: var(--ink);
     text-wrap: balance;
   }
@@ -1186,13 +1370,11 @@
      the flush Lottie above it. */
   .gw-card-body { padding: 18px; }
   .gw-card-body > .gw-aud { margin-bottom: 14px; }
+  /* Composes onto .t-h4 (serif · text-lg · heading · 600 · tracking-tight);
+     keeps the responsive clamp that lifts it toward text-xl. */
   .gw-card-title {
     margin: 0;
-    font-family: var(--font-serif);   /* Fraunces */
-    font-weight: 600;
     font-size: clamp(var(--text-lg), 1.6vw, var(--text-xl));
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
     color: var(--flicker-body);
   }
   .gw-card-desc {

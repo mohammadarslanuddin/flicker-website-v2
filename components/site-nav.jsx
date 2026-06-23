@@ -49,6 +49,7 @@ const NAV_STYLE = `
   .flk-bar > *{ pointer-events:auto; }
   .flk-logo{ display:inline-flex; align-items:center; }
   .flk-logo img{ height:28px; width:auto; display:block; }
+  .flk-logo .flk-logo-white{ display:none; }
   .flk-bar-right{ display:flex; align-items:center; gap:14px; }
   /* Sign in — lives in the top bar next to the toggle. When the menu opens the
      dark container morphs in behind it and it INVERTS: same shape, flipped colors. */
@@ -308,6 +309,28 @@ const NAV_STYLE = `
     .flk-logo img{ height:22px; }
   }
 
+  /* ---- Phones: the open menu morphs into a full-screen dark sheet that covers
+     the top-left logo. Swap the brick mark for the white variant while the menu
+     is open so it stays legible on the dark ground (the same brick→white invert
+     the floating dock does). Scoped to the same ≤600px range as the full-screen
+     morph; above it the menu is the compact right-anchored dropdown that never
+     reaches the logo, so the brick mark stays on the light hero. ---- */
+  @media (max-width: 600px){
+    .flk-bar.is-open .flk-logo .flk-logo-brick{ display:none; }
+    .flk-bar.is-open .flk-logo .flk-logo-white{ display:block; }
+
+    /* ---- Full-screen menu: roomier, finger-friendly hit targets. The sheet now
+       owns the whole viewport, so the items get larger type and generous vertical
+       padding (≥44px effective touch height) with more breathing room between the
+       sections. ---- */
+    .flk-menu-panel{ padding:84px 24px 32px 24px !important;
+      -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+    .flk-menu-link{ font-size:var(--text-2xl); padding:9px 0; }
+    .flk-menu-sublink{ font-size:var(--text-lg); padding:7px 0; }
+    .flk-menu-caption{ font-size:var(--text-sm); margin:20px 0 6px; }
+    .flk-menu-divider{ margin:18px 0 0; }
+  }
+
   @media (max-width: 360px){
     .flk-bar{ padding:18px 16px 16px; }
     .flk-bar-right{ gap:8px; }
@@ -329,6 +352,7 @@ export function SiteNav() {
   const linksRef = useRef([]);
   const openTlRef = useRef(null);
   const closeTlRef = useRef(null);
+  const fsTlRef = useRef(null);          // phones: the full-screen drop-down timeline
   const openWRef = useRef(320);
   const openHRef = useRef(120);
   const didMountRef = useRef(false);
@@ -423,7 +447,12 @@ export function SiteNav() {
     const openTl = gsap.timeline({ paused: true,
       onStart: armWillChange,
       onComplete: () => {
-        panel.style.willChange = "auto";panel.style.overflow = "visible";
+        panel.style.willChange = "auto";
+        // Full-screen sheet may be taller than the viewport once the items are
+        // enlarged for touch — let it scroll internally (it lives outside
+        // ScrollSmoother, so native overflow scrolling works). Desktop dropdown
+        // stays visible/auto-sized.
+        panel.style.overflow = panel.dataset.fullscreen === "true" ? "auto" : "visible";
         gsap.set(items, { clearProps: "opacity,filter,transform" });
       } });
     openTl.
@@ -432,10 +461,13 @@ export function SiteNav() {
       duration: 0.4, ease: "expo.out" }, 0) // stage 1: x-axis
     .to(panel, { height: () => openHRef.current,
       duration: 0.45, ease: "expo.out" }, 0.4) // stage 2: y-axis
+    // Items reveal AFTER the container morph settles (starts at 0.85, once the
+    // y-stretch is done) and cascade in one-by-one, top → down, with a clear
+    // per-item stagger — rather than fading in together mid-morph.
     .fromTo(items,
-    { opacity: 0, filter: "blur(12px)", y: 8 },
+    { opacity: 0, filter: "blur(10px)", y: 14 },
     { opacity: 1, filter: "blur(0px)", y: 0,
-      duration: 0.5, stagger: 0.035, ease: "power2.out" }, 0.45); // reveal rides the y-stretch
+      duration: 0.4, stagger: 0.05, ease: "power3.out" }, 0.85); // reveal follows the morph
 
     // CLOSE — items blur out together (no stagger), then the container collapses.
     const closeTl = gsap.timeline({ paused: true,
@@ -458,26 +490,82 @@ export function SiteNav() {
     return () => {openTl.kill();closeTl.kill();};
   }, []);
 
+  /* ---------- Phones: full-screen drop-down (NO corner morph) ----------
+     The sheet is full-width from the first frame and simply DROPS from the top
+     edge to the bottom of the viewport (height 0 → 100vh, anchored top), then the
+     items cascade in one-by-one once it has fully dropped. Close reverses: items
+     blur out, then the sheet retracts back up to the top edge. Built ad-hoc per
+     toggle (cheap) because the target height is the live viewport height. */
+  const runFullscreen = (panel, opening) => {
+    if (typeof gsap === "undefined" || !panel) return;
+    const items = panel.querySelectorAll(
+      ".flk-menu-link, .flk-menu-divider, .flk-menu-caption, .flk-menu-sublink");
+    if (fsTlRef.current) fsTlRef.current.kill();
+    gsap.killTweensOf(panel);
+
+    if (opening) {
+      // Full-width sheet pinned to the top edge, collapsed to zero height.
+      gsap.set(panel, { top: 0, right: 0, left: "auto", borderRadius: 0,
+        width: window.innerWidth, height: 0, opacity: 1, overflow: "hidden" });
+      gsap.set(items, { opacity: 0, filter: "blur(10px)", y: 14 });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          panel.style.overflow = "auto";          // tall content scrolls within the sheet
+          gsap.set(items, { clearProps: "opacity,filter,transform" });
+        } });
+      tl
+      .to(panel, { height: window.innerHeight, duration: 0.5, ease: "expo.out" }, 0)
+      // Items reveal AFTER the sheet has dropped — one-by-one, top → down.
+      .to(items, { opacity: 1, filter: "blur(0px)", y: 0,
+        duration: 0.4, stagger: 0.05, ease: "power3.out" }, 0.5);
+      fsTlRef.current = tl;
+    } else {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(panel, { clearProps: "width,height,opacity,overflow,top,right,left,borderRadius,transition" });
+        } });
+      tl
+      .to(items, { opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power2.in" }, 0)
+      .to(panel, { height: 0, duration: 0.4, ease: "expo.inOut" }, 0.08)   // retract up
+      .to(panel, { opacity: 0, duration: 0.12, ease: "power2.in" }, 0.32);
+      fsTlRef.current = tl;
+    }
+  };
+
   /* ---------- Drive open / close (replay the prebuilt timelines) ---------- */
   useEffect(() => {
     const openTl = openTlRef.current,closeTl = closeTlRef.current;
     if (!openTl || !closeTl) return;
+    const panel = panelRef.current;
     if (open) {
-      const panel = panelRef.current;
-      openWRef.current = Math.min(330, window.innerWidth - 36);
-      // Measure the natural expanded height at the target width (synchronous,
-      // before paint) so the open tween animates to a real number, not "auto".
-      const prev = { w: panel.style.width, h: panel.style.height, ov: panel.style.overflow };
-      panel.style.overflow = "visible";
-      panel.style.width = openWRef.current + "px";
-      panel.style.height = "auto";
-      openHRef.current = Math.ceil(panel.getBoundingClientRect().height);
-      panel.style.width = prev.w;panel.style.height = prev.h;panel.style.overflow = prev.ov;
-      closeTl.pause(); // stop the opposing timeline first
-      openTl.invalidate().restart();
+      // Phones get the FULL-SCREEN drop-down (no morph); desktop keeps the compact
+      // top-right dropdown that morphs open (width, then height).
+      const fullscreen = typeof window !== "undefined" && window.matchMedia &&
+      window.matchMedia("(max-width: 600px)").matches;
+      panel.dataset.fullscreen = fullscreen ? "true" : "false";
+      if (fullscreen) {
+        openTl.pause();
+        runFullscreen(panel, true);
+      } else {
+        openWRef.current = Math.min(330, window.innerWidth - 36);
+        // Measure the natural expanded height at the target width (synchronous,
+        // before paint) so the open tween animates to a real number, not "auto".
+        const prev = { w: panel.style.width, h: panel.style.height, ov: panel.style.overflow };
+        panel.style.overflow = "visible";
+        panel.style.width = openWRef.current + "px";
+        panel.style.height = "auto";
+        openHRef.current = Math.ceil(panel.getBoundingClientRect().height);
+        panel.style.width = prev.w;panel.style.height = prev.h;panel.style.overflow = prev.ov;
+        closeTl.pause(); // stop the opposing timeline first
+        openTl.invalidate().restart();
+      }
     } else if (didMountRef.current) {
-      openTl.pause();
-      closeTl.invalidate().restart();
+      if (panel && panel.dataset.fullscreen === "true") {
+        runFullscreen(panel, false);          // retract the full-screen sheet
+      } else {
+        openTl.pause();
+        closeTl.invalidate().restart();
+      }
     }
     didMountRef.current = true;
   }, [open]);
@@ -785,9 +873,10 @@ export function SiteNav() {
       <style>{NAV_STYLE}</style>
 
       {/* Top bar — logo + Sign in + icon-only hamburger */}
-      <header className="flk-bar" ref={barRef}>
+      <header className={"flk-bar" + (open ? " is-open" : "")} ref={barRef}>
         <a className="flk-logo" href="/" aria-label="Flicker App home" ref={logoRef}>
-          <img src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
+          <img className="flk-logo-brick" src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
+          <img className="flk-logo-white" src="flicker/logo-flicker-white.svg" alt="Flicker App" />
         </a>
         <div className={"flk-bar-right" + (open ? " is-open" : "")}>
           <a href="#signin" className="cta cta-secondary flk-signin">Sign in<span className="cta-arrow" aria-hidden="true"><i className="ph ph-arrow-right" style={{ display: "block", fontSize: 16, lineHeight: 1 }}></i></span></a>

@@ -6,8 +6,8 @@ import { HowItWorks } from "./how-it-works-v6";
 import { SubjectShowcase } from "./showcase-v6";
 import { Growing } from "./growing-v6";
 import { Listen } from "./listen-v6";
-import { MemberCTA } from "./member-cta-v6";
-import { Testimonials } from "./testimonials-v6";
+import { MemberCTAV7 } from "./member-cta-v7";
+import { TestimonialsV7 } from "./testimonials-v7";
 import { FaqSection } from "./faq-v6";
 import { SiteFooter } from "./footer-v6";
 import { useTweaks } from "./tweaks-panel-v6";
@@ -187,8 +187,8 @@ export default function App() {
         {/* All live inside Listen's black container (.ln-belly) — the
             section the flip morphs into — so there's no seam anywhere:
             testimonials → membership CTA → FAQs → footer. */}
-        <Testimonials />
-        <MemberCTA />
+        <TestimonialsV7 />
+        <MemberCTAV7 />
         <FaqSection />
         <SiteFooter />
       </Listen>

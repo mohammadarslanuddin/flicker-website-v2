@@ -449,7 +449,7 @@ export function SubjectShowcase() {
       <div ref={pinRef} className="sw-pin">
         {/* Centered heading block — rises up on scroll */}
         <div ref={headRef} className="sw-head">
-          <h2 className="sw-h2">
+          <h2 className="t-h2 sw-h2">
             <span className="sw-line" ref={(el) => {if (el) lineRefs.current[0] = el;}}>{headLine("Summaries Across Every")}</span>
             <span className="sw-line" ref={(el) => {if (el) lineRefs.current[1] = el;}}>{headLine("Subject That Matters")}</span>
           </h2>

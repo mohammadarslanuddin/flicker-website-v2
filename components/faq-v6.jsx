@@ -303,7 +303,7 @@ export function FaqSection() {
 
       <div className="gw-header-group">
         <div className="gw-head">
-          <h2 className="gw-h2">{headWords("Questions, Answered")}</h2>
+          <h2 className="t-h2 gw-h2">{headWords("Questions, Answered")}</h2>
           <p className="gw-body">
             {bodyWords("Everything you need to know before your first summary.")}
           </p>

@@ -116,13 +116,11 @@ const TM_CSS = `
     text-align: center;
     padding: 0 clamp(16px, 3vw, 40px);
   }
+  /* Composes onto .t-h2 (serif · leading-heading · 600 · tracking-tight); keeps
+     the responsive clamp + the light canvas colour for the dark section. */
   .tm-h2 {
     margin: 0;
-    font-family: var(--font-serif);   /* Fraunces — same as .sw-h2 */
-    font-weight: 600;
     font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
     color: var(--flicker-canvas);
     text-wrap: balance;
   }
@@ -387,7 +385,7 @@ export function Testimonials() {
       <div ref={pinRef} className="tm-pin" style={{ fontWeight: "900" }}>
         {/* Pinned center content — stays centered while the cards settle around it */}
         <div className="tm-center">
-          <h2 className="tm-h2">
+          <h2 className="t-h2 tm-h2">
             <span className="tm-line" ref={(el) => {if (el) lineRefs.current[0] = el;}}>{headLine("Stories From")}</span>
             <span className="tm-line" ref={(el) => {if (el) lineRefs.current[1] = el;}}>{headLine("Our Readers.")}</span>
           </h2>

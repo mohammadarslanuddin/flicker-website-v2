@@ -62,14 +62,12 @@ const FOOTER_CSS = `
     color: var(--muted);
     line-height: 1.7;
   }
+  /* Composes onto .t-h2 (serif · leading-heading · 600 · tracking-tight). The
+     fixed text-4xl size + deep-red colour (previously forced inline) stay here. */
   .site-footer .footer-heading {
     margin: clamp(44px, 5.5vw, 84px) 0 0;
-    font-family: var(--f-serif);
-    font-weight: 600;
-    font-size: clamp(var(--text-3xl), 12.5vw, var(--text-7xl));
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
-    color: var(--ink);
+    font-size: var(--text-4xl);
+    color: rgb(82, 28, 31);
     text-align: center;
     text-wrap: balance;
   }
@@ -253,9 +251,15 @@ const FOOTER_CSS = `
     .site-footer .newsletter-form button { font-size: var(--text-base); }
   }
   @media (max-width: 560px) {
+    /* Stretch the CTA buttons full-width (height/padding and text+icon size
+       unchanged — only the horizontal width grows). */
+    .site-footer .footer-cta-buttons { flex-direction: column; align-items: stretch; }
+    .site-footer .btn { width: 100%; justify-content: center; }
     .site-footer .footer-grid { grid-template-columns: 1fr; gap: 44px; }
     .site-footer .footer-bottom { grid-template-columns: 1fr; justify-items: start; gap: 16px; }
-    .site-footer .footer-legal { grid-column: auto; justify-content: flex-start; }
+    /* Let the three legal links wrap instead of overflowing the panel on the
+       narrowest phones (they are individually white-space:nowrap). */
+    .site-footer .footer-legal { grid-column: auto; justify-content: flex-start; flex-wrap: wrap; row-gap: 10px; }
     .site-footer .footer-brand { grid-column: auto; justify-self: start; }
   }
 `;
@@ -270,9 +274,9 @@ export function SiteFooter() {
             {/* Top CTA */}
             <div className="footer-cta">
               <p className="footer-eyebrow eyebrow">Join a growing library of<br />the world’s best ideas</p>
-              <h2 className="footer-heading" style={{ fontSize: "var(--text-4xl)", fontFamily: 'var(--font-serif)', color: "rgb(82, 28, 31)", letterSpacing: "-0.03em", lineHeight: "var(--leading-heading)" }}>
-                <div><span style={{ color: "rgb(201, 26, 58)", fontSize: "var(--text-4xl)" }}>One Idea, Every Week</span></div>
-                <div style={{ fontSize: "var(--text-4xl)" }}>Habit-framed.</div>
+              <h2 className="t-h2 footer-heading">
+                <div><span style={{ color: "rgb(201, 26, 58)" }}>One Idea, Every Week</span></div>
+                <div>Habit-framed.</div>
               </h2>
               <div className="footer-cta-buttons">
                 <a href="#start" className="btn btn-primary">Become a member<span className="btn-arrow" aria-hidden="true"><i className="ph ph-arrow-right"></i></span></a>

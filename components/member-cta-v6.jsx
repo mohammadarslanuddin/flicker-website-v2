@@ -38,13 +38,11 @@ const MEMBER_CTA_CSS = `
   }
 
   /* ---- Headline — big tonal display, set in Fraunces ---- */
+  /* Composes onto .t-h2 (serif · leading-heading · 600 · tracking-tight); keeps
+     the larger text-4xl size + the light canvas colour for the dark section. */
   .mcta-heading {
     margin: 0;
-    font-family: var(--font-serif);
-    font-weight: 600;
     font-size: var(--text-4xl);
-    line-height: var(--leading-heading);
-    letter-spacing: -0.03em;
     text-align: center;
     text-wrap: balance;
     color: #FFF9EC;
@@ -216,8 +214,8 @@ export function MemberCTA() {
       <style>{MEMBER_CTA_CSS}</style>
 
       <div className="mcta-top" ref={topRef}>
-        <h2 className="mcta-heading">
-          <span className="dim" style={{ fontSize: "var(--text-4xl)" }}>Become a member to </span><strong>unlock</strong><br />
+        <h2 className="t-h2 mcta-heading">
+          <span className="dim">Become a member to </span><strong>unlock</strong><br />
           <strong>the full library</strong><span className="dim"> today.</span>
         </h2>
 

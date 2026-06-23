@@ -84,7 +84,7 @@ const Card = ({ kind, title, desc }) =>
 <article className="gw-card" data-kind={kind}>
     <Media kind={kind} />
     <div className="gw-card-body">
-      <h3 className="gw-card-title">{words(title)}</h3>
+      <h3 className="t-h4 gw-card-title">{words(title)}</h3>
       <p className="gw-card-desc">{words(desc)}</p>
     </div>
   </article>;
@@ -325,7 +325,7 @@ export function Growing() {
             </span>
             <span className="gw-badge-label"><b>1000+</b> Active User</span>
           </div>
-          <h2 className="gw-h2">
+          <h2 className="t-h2 gw-h2">
             {fillWords("Readers Are Already")}<br />{fillWords("Growing With Flicker App")}
           </h2>
           <p className="gw-body">

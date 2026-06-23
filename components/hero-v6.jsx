@@ -129,6 +129,8 @@ export function HeroV3({ tweaks, setTweak }) {
   const scrollArrowRef = useRef(null); // bouncing arrow target
   const bookCardOuterRef = useRef(null); // scroll-driven fade target
   const bookCardRef = useRef(null); // entrance + dismiss animation target
+  const bookReopenRef = useRef(null); // round reopen button shown after dismiss
+  const bookCardReopenedRef = useRef(false); // true => next entrance is a fast reopen, not the delayed first load
   const [bookCardDismissed, setBookCardDismissed] = useState(false);
 
   /* ---------- Headline word-by-word reveal ----------
@@ -139,7 +141,7 @@ export function HeroV3({ tweaks, setTweak }) {
   useEffect(() => {
     const el = rotatorRef.current;
     if (!el) return;
-    const PHRASES = ["Grow Smarter,", "Grow Faster."];
+    const PHRASES = ["Learn Smarter,", "Grow Faster."];
     const DISPLAY_MS = 2000; // dwell once a phrase is fully revealed
     let idx = 0;
     let cancelled = false;
@@ -264,39 +266,63 @@ export function HeroV3({ tweaks, setTweak }) {
     const outer = bookCardOuterRef.current;
     if (!inner || !outer) return;
 
-    // Entrance — slides up + scales in after a 3-second delay so it doesn't
-    // compete with the headline / canvas reveal on first load.
-    gsap.set(inner, { opacity: 0, y: 28, scale: 0.96 });
+    // Entrance — slides up + scales in. On first load it waits 3s so it doesn't
+    // compete with the headline / canvas reveal; on a reopen (from the round
+    // button) it snaps back quickly with no delay.
+    const isReopen = bookCardReopenedRef.current;
+    bookCardReopenedRef.current = false;
+    gsap.set(inner, { opacity: 0, y: isReopen ? 14 : 28, scale: isReopen ? 0.98 : 0.96 });
     gsap.to(inner, {
       opacity: 1, y: 0, scale: 1,
-      duration: 0.85, delay: 3, ease: "power3.out"
+      duration: isReopen ? 0.45 : 0.85,
+      delay: isReopen ? 0 : 3,
+      ease: "power3.out"
     });
 
-    // Scroll-driven defocus: as the hero scrolls past its first half, the
-    // card fades, drifts down, and softly blurs out — a depth-of-field exit
-    // rather than a hard opacity cut.
-    let st = null;
-    if (typeof ScrollTrigger !== "undefined" && wrapRef.current) {
-      st = ScrollTrigger.create({
-        trigger: wrapRef.current,
-        start: "top top",
-        end: "50% top",
-        onUpdate: (self) => {
-          const p = self.progress; // 0 → 1 across the first half of hero
-          // Smooth easing on the scroll mapping for a more organic feel
-          const eased = p * p * (3 - 2 * p); // smoothstep
-          gsap.set(outer, {
-            opacity: 1 - eased,
-            y: eased * 24,
-            filter: `blur(${eased * 5}px)`
-          });
-        }
-      });
-    }
+    return () => {
+      gsap.killTweensOf([inner, outer]);
+    };
+  }, [bookCardDismissed]);
+
+  /* ---------- Reopen button: short fade-in once the card is dismissed ------ */
+  useEffect(() => {
+    if (!bookCardDismissed) return;
+    const btn = bookReopenRef.current;
+    if (!btn) return;
+    gsap.set(btn, { opacity: 0, scale: 0.8 });
+    gsap.to(btn, { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" });
+    return () => gsap.killTweensOf(btn);
+  }, [bookCardDismissed]);
+
+  /* ---------- Instant fade-out the moment scroll starts -------------------
+     Whichever is currently mounted — the book card (outer wrapper) or the round
+     reopen button — disappears with a quick one-shot fade as soon as the hero
+     leaves the very top, and fades back in when scrolled back to the top. This
+     replaces the old scrub-mapped defocus with a snappy on/off. */
+  useEffect(() => {
+    if (typeof ScrollTrigger === "undefined" || !wrapRef.current) return;
+    const target = bookCardDismissed ? bookReopenRef.current : bookCardOuterRef.current;
+    if (!target) return;
+
+    // Fires at the very first instant of scroll (end "+=1"), but the tween
+    // itself is a smooth, gentle fade — not an abrupt cut.
+    const out = { opacity: 0, y: 18, filter: "blur(4px)", duration: 0.55, ease: "power2.out", overwrite: "auto" };
+    const back = { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "power2.out", overwrite: "auto" };
+
+    const st = ScrollTrigger.create({
+      trigger: wrapRef.current,
+      start: "top top",
+      end: "+=1", // 1px past the top — fires the instant scroll begins
+      onLeave: () => gsap.to(target, out),
+      onEnterBack: () => gsap.to(target, back)
+    });
+
+    // If we mount already scrolled past the top, start hidden (no flash-in).
+    if (st.scroll() > 0) gsap.set(target, { opacity: 0, y: 24, filter: "blur(5px)" });
 
     return () => {
-      if (st) st.kill();
-      gsap.killTweensOf([inner, outer]);
+      st.kill();
+      gsap.killTweensOf(target);
     };
   }, [bookCardDismissed]);
 
@@ -678,19 +704,12 @@ export function HeroV3({ tweaks, setTweak }) {
                                                                             no blur — per the latest direction. */}
       <div
           aria-hidden="true"
+          className="hero-backdrop-fog"
           style={{
             position: "absolute",
             inset: 0,
             zIndex: 12,
-            pointerEvents: "none",
-            background:
-            "radial-gradient(ellipse 92% 78% at 50% 52%, " +
-            "rgba(var(--bg-rgb), 0.97) 0%, " +
-            "rgba(var(--bg-rgb), 0.92) 14%, " +
-            "rgba(var(--bg-rgb), 0.78) 30%, " +
-            "rgba(var(--bg-rgb), 0.50) 50%, " +
-            "rgba(var(--bg-rgb), 0.22) 72%, " +
-            "rgba(var(--bg-rgb), 0.00) 92%)"
+            pointerEvents: "none"
           }} />
       
 
@@ -719,34 +738,33 @@ export function HeroV3({ tweaks, setTweak }) {
                                                                               Top line: rolling-text rotator. Black weight (900).
                                                                               Bottom line: static "in Minutes." in italic light brick. */}
         <h1
+            className="t-display hero-headline"
             style={{
               margin: 0,
-              fontFamily: "var(--font-serif-display)",
-              fontWeight: 600,
               fontSize: "clamp(var(--text-3xl), 8vw, var(--text-6xl))",
               lineHeight: "var(--leading-none)",
-              letterSpacing: "-0.03em",
               color: "var(--ink)",
               maxWidth: 1200,
               textWrap: "balance"
             }}>
-          
+
           <span
               ref={rotatorRef}
               className="headline-roll"
               style={{
-                display: "block",
-                fontWeight: 600, fontFamily: "var(--font-serif-display)"
+                display: "block"
               }}>
-            
-            Grow Smarter,
+
+            Learn Smarter,
           </span>
           <em
+              className="t-display hero-headline"
               style={{
                 display: "block",
                 fontStyle: "italic",
-
-                color: "var(--brick)", lineHeight: "var(--leading-none)", fontWeight: "600", fontSize: "clamp(var(--text-3xl), 8vw, var(--text-6xl))", fontFamily: "var(--font-serif-display)"
+                color: "var(--brick)",
+                lineHeight: "var(--leading-none)",
+                fontSize: "clamp(var(--text-3xl), 8vw, var(--text-6xl))"
               }}>in minutes.
 
 
@@ -755,15 +773,13 @@ export function HeroV3({ tweaks, setTweak }) {
 
         {/* Subtitle — Outfit lead */}
         <p
+            className="t-body"
             style={{
               margin: "26px 0 0 0",
-              fontFamily: "var(--font-sans)",
-
-              fontSize: "var(--text-base)",
               lineHeight: 1.5,
               color: "var(--ink-soft)",
               maxWidth: 620,
-              textWrap: "pretty", fontWeight: "400"
+              textWrap: "pretty"
             }}>
           
           Get the core ideas from the world&rsquo;s best books, without the
@@ -803,9 +819,11 @@ export function HeroV3({ tweaks, setTweak }) {
 
       {/* ---------- Bottom-left tagline ---------- */}
       <div
+          className="hero-tagline"
           style={{
             position: "absolute",
-            left: 24, bottom: 28,
+            left: "50%", bottom: 28,
+            transform: "translateX(-50%)",
             zIndex: 25,
             fontFamily: "var(--font-sans)",
             fontSize: "var(--text-xs)",
@@ -859,8 +877,8 @@ export function HeroV3({ tweaks, setTweak }) {
                 loading="lazy" />
 
             <div className="book-card-text">
-              <span className="book-card-badge" style={{ fontWeight: "400", fontSize: "var(--text-2xs)" }}>Book of the week</span>
-              <span className="book-card-title" style={{ letterSpacing: "-0.04em", fontSize: "var(--text-base)" }}>Atomic Habits</span>
+              <span className="book-card-badge">Book of the week</span>
+              <span className="book-card-title">Atomic Habits</span>
               <span className="book-card-meta">
                 <span>James Clear</span>
                 <span aria-hidden="true" className="book-card-meta-dot" />
@@ -893,9 +911,25 @@ export function HeroV3({ tweaks, setTweak }) {
       </div>
       }
 
+      {/* ---------- Reopen button (shown only while the card is dismissed) ---- */}
+      {bookCardDismissed &&
+        <button
+            ref={bookReopenRef}
+            type="button"
+            className="book-reopen-btn"
+            aria-label="Reopen book of the week: Atomic Habits by James Clear"
+            onClick={() => {
+              bookCardReopenedRef.current = true;
+              setBookCardDismissed(false);
+            }}>
+          <img src="books/01.png" alt="" className="book-reopen-cover" loading="lazy" />
+        </button>
+      }
+
       {/* ---------- Bottom-right scroll indicator (replaces pause button) -- */}
       <div
           ref={scrollIndRef}
+          className="hero-scroll-ind"
           style={{
             position: "absolute",
             right: 24, bottom: 28,
