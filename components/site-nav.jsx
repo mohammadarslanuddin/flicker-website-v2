@@ -321,7 +321,6 @@ export function SiteNav() {
   const [hidden, setHidden] = useState(false);
   const [docked, setDocked] = useState(false);
   const [pillOpen, setPillOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [host] = useState(() =>
   typeof document !== "undefined" ? document.createElement("div") : null);
 
@@ -352,6 +351,7 @@ export function SiteNav() {
   const dockedRef = useRef(false);      // latest docked state for the stable scroll cb
   const heroElRef = useRef(null);       // cached hero section element
   const progRef = useRef(0);            // last rounded progress (avoid per-frame re-render)
+  const progEl = useRef(null);          // the progress span — written directly, no state re-render
   const pillOpenRef = useRef(false);    // latest pill-open state for the scroll cb
   const pillBaseYRef = useRef(0);       // scroll position when the pill menu opened
   const upAccRef = useRef(0);           // accumulated upward scroll distance
@@ -560,7 +560,10 @@ export function SiteNav() {
       document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(100, Math.max(0, y / max * 100)) : 0;
       const pr = Math.round(p);
-      if (pr !== progRef.current) {progRef.current = pr;setProgress(pr);}
+      // Write the CSS var straight to the DOM — the value has exactly one
+      // consumer (the .flk-pill-prog span), so a full SiteNav re-render per 1%
+      // scrolled is pure waste (rerender-use-ref-transient-values).
+      if (pr !== progRef.current) {progRef.current = pr;if (progEl.current) progEl.current.style.setProperty("--p", pr + "%");}
 
       // Direction: trust the actual (smoothed) scroll-position delta first.
       // self.direction lags and STICKS to +1 (down) while ScrollSmoother eases
@@ -814,7 +817,7 @@ export function SiteNav() {
           </div>
         </div>
 
-        <span className="flk-pill-prog" style={{ "--p": progress + "%" }} aria-hidden="true"></span>
+        <span className="flk-pill-prog" ref={progEl} style={{ "--p": "0%" }} aria-hidden="true"></span>
 
         <div className="flk-pill-body" ref={pillBodyRef}>
           <p className="flk-body-cap">Menu</p>

@@ -67,6 +67,28 @@ function fillWords(text) {
   );
 }
 
+// Lottie imagery cell — flush, sized to the Lottie's own aspect ratio.
+// Hoisted to module scope so they are stable component types (never remounted
+// when Growing re-renders) per rerender-no-inline-components.
+const Media = ({ kind }) => {
+  const L = LOTTIE[kind];
+  return (
+    <div className="gw-media">
+      <div className="gw-lottie" data-lottie={L.path}
+      style={{ aspectRatio: L.w + " / " + L.h }} role="img"></div>
+    </div>);
+
+};
+
+const Card = ({ kind, title, desc }) =>
+<article className="gw-card" data-kind={kind}>
+    <Media kind={kind} />
+    <div className="gw-card-body">
+      <h3 className="gw-card-title">{words(title)}</h3>
+      <p className="gw-card-desc">{words(desc)}</p>
+    </div>
+  </article>;
+
 export function Growing() {
   const sectionRef = useRef(null);
 
@@ -288,27 +310,6 @@ export function Growing() {
       if (ctx) ctx.revert();
     };
   }, []);
-
-  // Lottie imagery cell — flush, sized to the Lottie's own aspect ratio.
-  const Media = ({ kind }) => {
-    const L = LOTTIE[kind];
-    return (
-      <div className="gw-media">
-        <div className="gw-lottie" data-lottie={L.path}
-        style={{ aspectRatio: L.w + " / " + L.h }} role="img"></div>
-      </div>);
-
-  };
-
-  const Card = ({ kind, title, desc }) =>
-  <article className="gw-card" data-kind={kind}>
-      <Media kind={kind} />
-      <div className="gw-card-body">
-        <h3 className="gw-card-title">{words(title)}</h3>
-        <p className="gw-card-desc">{words(desc)}</p>
-      </div>
-    </article>;
-
 
   return (
     <section ref={sectionRef} data-screen-label="05 Growing" data-no-autofade="" className="gw-section">

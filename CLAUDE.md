@@ -11,6 +11,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   intentional so the owner always knows what is happening — surface the request clearly and do
   not bury it inside a long response.
 
+## Performance reference (installed skill)
+
+This repo vendors the **`vercel-react-best-practices`** skill at
+`.agents/skills/vercel-react-best-practices/` (symlinked into `.claude/skills/` for Claude Code).
+It is a 70-rule React/Next.js performance guide. **Consult it when writing, reviewing, or
+refactoring components** — it auto-triggers on React/Next perf work. `SKILL.md` is the index;
+`rules/<id>.md` are the individual rules; `AGENTS.md` is the full compiled doc.
+
+Note this page is **client-only** (`app/page.jsx` mounts via `dynamic(..., { ssr: false })`),
+so the `server-*` and async/RSC/data-fetching rule families generally **do not apply**. The
+relevant families here are `rerender-*`, `rendering-*` (esp. `content-visibility`,
+`animate-svg-wrapper`, `svg-precision`), `js-*`, and `client-passive-event-listeners` —
+the scroll/Lottie hot paths are where the wins are.
+
 ## What this is
 
 A single **Home** page for Flicker (an AI book-summaries app), built with **Next.js
