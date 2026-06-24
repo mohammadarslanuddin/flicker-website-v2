@@ -19,6 +19,16 @@ import { useTweaks } from "./tweaks-panel-v6";
 // gsap + ScrollTrigger + ScrollSmoother are already attached to window by now.
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother, Flip);
 
+// Mobile browsers fire a `resize` on nearly every scroll frame as the URL/address
+// bar slides in and out (it changes the visual viewport height). Left unguarded,
+// each one triggers ScrollTrigger.refresh() — re-measuring every pinned section
+// (how-it-works, showcase, growing, testimonials, listen) mid-scroll, so their
+// scrub positions snap and the whole page stutters. ignoreMobileResize tells
+// ScrollTrigger to ignore those address-bar-only (height-delta) resizes on touch.
+// Real layout changes (orientation flips change width too) still refresh.
+// Desktop has no such resize stream, so this is a no-op there.
+ScrollTrigger.config({ ignoreMobileResize: true });
+
 // Flicker-aligned tone presets. Each maps to design-system tokens so we never
 // invent new colors — just choose which surface drives the page.
 const TONES = {
@@ -120,6 +130,14 @@ export default function App() {
     const setup = () => {
       const sections = Array.from(document.querySelectorAll("section[data-screen-label]"));
       const triggers = [];
+      // On phones, SKIP the generic cross-dissolve entirely (it ran on mobile in
+      // this v6 port but NOT in the archived predecessor). Each non-pinned section
+      // otherwise gets TWO scrub opacity triggers, promoting several viewport-sized
+      // layers and re-rasterizing them every scroll frame — a needless GPU/refresh
+      // tax on weak mobile devices. Mobile simply shows sections at full opacity
+      // (an imperceptible hard cut at seams); desktop keeps the full cross-dissolve.
+      const isMobile = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+      if (isMobile) { ScrollTrigger.refresh(); return triggers; }
       sections.forEach((section, i) => {
         // Pinned sections opt out of the generic cross-dissolve so they
         // don't fade themselves out mid-pin.

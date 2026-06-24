@@ -350,7 +350,15 @@ export function SubjectShowcase() {
       track.addEventListener("wheel", onWheel, { passive: false });
       track.addEventListener("click", onClick, true);
 
-      const onResizeMq = () => {half = track.scrollWidth / 2;wrap();apply();};
+      // Width-gate: `half` is the carousel content's half-WIDTH; it can't change on
+      // a height-only resize, so ignore the address-bar show/hide churn on touch
+      // (re-reading track.scrollWidth forces a reflow). Real width changes still wrap.
+      let lastMqVW = window.innerWidth;
+      const onResizeMq = () => {
+        if (window.innerWidth === lastMqVW) return;
+        lastMqVW = window.innerWidth;
+        half = track.scrollWidth / 2; wrap(); apply();
+      };
       window.addEventListener("resize", onResizeMq);
 
       prev = performance.now();
@@ -403,11 +411,21 @@ export function SubjectShowcase() {
       build();
     }
 
-    const onResize = () => render(lastP);
+    // Width-gate + debounce: render() recomputes geometry from live VH on the next
+    // scroll frame, so a height-only address-bar change needs no re-render here.
+    let lastVW = window.innerWidth;
+    let resizeT = 0;
+    const onResize = () => {
+      if (window.innerWidth === lastVW) return;
+      lastVW = window.innerWidth;
+      window.clearTimeout(resizeT);
+      resizeT = window.setTimeout(() => render(lastP), 150);
+    };
     window.addEventListener("resize", onResize);
 
     return () => {
       killed = true;
+      window.clearTimeout(resizeT);
       window.removeEventListener("resize", onResize);
       if (marqueeCleanup) marqueeCleanup();
       if (st) st.kill();

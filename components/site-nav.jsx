@@ -641,6 +641,21 @@ export function SiteNav() {
     const mqMobile = typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(max-width: 900px)") : null;
 
+    // Cache the hero HEIGHT once per refresh instead of calling
+    // getBoundingClientRect() on every scroll frame. onUpd runs every frame across
+    // the WHOLE site, so a per-frame layout READ forced a synchronous reflow of all
+    // sections' (now compositor-only) writes each tick — a top-level mobile jank
+    // source. Under ScrollSmoother the hero sits at content-top, so its rect.top
+    // equals -y; the old test (-r.top / r.height >= 0.7) is therefore exactly
+    // (y >= heroHeight * 0.7) — no per-frame DOM measurement needed.
+    let heroHeight = 0;
+    const measureHero = () => {
+      const h = heroElRef.current ||
+        (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
+      if (h) { const r = h.getBoundingClientRect(); if (r.height > 0) heroHeight = r.height; }
+    };
+    const pastHeroNow = (y) => heroHeight > 0 ? y >= heroHeight * 0.7 : y > window.innerHeight * 0.7;
+
     const onUpd = (y, dir) => {
       // --- Scroll progress (0–100) through the whole page ---
       const max = typeof ScrollTrigger !== "undefined" && ScrollTrigger.maxScroll ?
@@ -670,11 +685,7 @@ export function SiteNav() {
         // bar toggled constantly and each toggle restarted an animated blur —
         // that was the scroll jitter. In the hero it's always shown.
         if (dockedRef.current) {dockedRef.current = false;setDocked(false);}
-        const heroM = heroElRef.current ||
-        (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
-        const pastHeroM = heroM ?
-        (() => {const r = heroM.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.7;})() :
-        y > window.innerHeight * 0.7;
+        const pastHeroM = pastHeroNow(y);
         let h = barHiddenRef.current;
         if (!pastHeroM) {h = false;downAccRef.current = 0;}              // in the hero → always shown
         else if (goingUp) {h = false;downAccRef.current = 0;}           // any scroll-up → reveal
@@ -686,11 +697,7 @@ export function SiteNav() {
       } else {
         // DESKTOP: the top bar lives in the hero zone (hides past it via the
         // GSAP slide-up + fade), and the floating dock takes over below.
-        const hero = heroElRef.current ||
-        (heroElRef.current = document.querySelector('[data-screen-label="01 Hero"]'));
-        const pastHero = hero ?
-        (() => {const r = hero.getBoundingClientRect();return r.height > 0 && -r.top / r.height >= 0.7;})() :
-        y > window.innerHeight * 0.7;
+        const pastHero = pastHeroNow(y);
         if (pastHero !== barHiddenRef.current) {barHiddenRef.current = pastHero;setHidden(pastHero);}
 
         let next = dockedRef.current;
@@ -727,9 +734,14 @@ export function SiteNav() {
         invalidateOnRefresh: true,
         onUpdate: (self) => onUpd(self.scroll(), self.direction)
       });
-      return () => st.kill();
+      // Measure the hero height now and on every refresh (load / resize / layout
+      // change) so onUpd never has to read the DOM per frame.
+      measureHero();
+      ScrollTrigger.addEventListener("refresh", measureHero);
+      return () => { st.kill(); ScrollTrigger.removeEventListener("refresh", measureHero); };
     }
     lastYRef.current = window.pageYOffset;
+    measureHero();
     const onScroll = () => {
       const y = window.pageYOffset;
       onUpd(y, y < lastYRef.current ? -1 : 1);

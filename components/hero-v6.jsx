@@ -608,6 +608,11 @@ export function HeroV3({ tweaks, setTweak }) {
     if (!section || !frame) return;
     if (window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Desktop (fine pointer) keeps the defocus-blur exit. On touch we skip it:
+    // blurring the whole full-viewport hero on every scroll frame is the most
+    // expensive mobile-GPU scroll-time op and the opacity fade alone reads fine.
+    const allowBlur = !!(window.matchMedia &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
     // GSAP tweens this 0 → 1 proxy across the scroll range; onUpdate applies
     // the eased value with live viewport margins so it stays responsive.
@@ -644,7 +649,8 @@ export function HeroV3({ tweaks, setTweak }) {
     // continues morphing/leaving — a soft defocus exit.
     const fade = gsap.to(section, {
       opacity: 0,
-      filter: "blur(14px)",
+      // Blur only on desktop (see allowBlur above); touch fades opacity only.
+      ...(allowBlur ? { filter: "blur(14px)" } : {}),
       ease: "none",
       scrollTrigger: {
         trigger: section,
@@ -670,7 +676,14 @@ export function HeroV3({ tweaks, setTweak }) {
       data-no-autofade=""
       style={{
         position: "relative",
-        height: "100vh",
+        // SMALL viewport height (svh) = the height with the mobile address bar
+        // SHOWN. Unlike dvh, svh does NOT change as the bar slides in/out during
+        // scroll, so the hero box stays a constant size — no per-frame resize that
+        // would re-allocate the canvas backing buffer and invalidate the hero's
+        // ScrollTriggers (the source of the entry-scroll jitter). Content is
+        // flex-centered, so it stays in view whether the bar is shown or hidden.
+        // On desktop svh == dvh == 100vh (no dynamic chrome) — pixel-identical.
+        height: "100svh",
         width: "100%",
         overflow: "hidden",
         background: "var(--bg)"

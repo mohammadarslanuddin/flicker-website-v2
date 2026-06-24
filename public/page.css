@@ -13,7 +13,15 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    /* Kill native rubber-band/pull-to-refresh on touch. That bounce runs on the
+       compositor at a different cadence than ScrollSmoother's lerped transform and
+       fights it at the page ends + section seams, reading as a stutter/snap.
+       Desktop wheel scrolling and layout are unaffected. */
+    overscroll-behavior: none;
+  }
   html { background: var(--bg); }
   body {
     font-family: var(--font-sans);
@@ -115,9 +123,9 @@
     }
     .hero-ctas .cta {
       width: 100%;
-      /* 44px = 22px icon + 11px×2 padding (mobile scale) */
-      min-height: 44px;
-      padding: 11px 20px;
+      /* 48px = 22px icon + 13px×2 padding (mobile scale) */
+      min-height: 48px;
+      padding: 13px 20px;
       font-size: var(--text-sm);
       gap: 8px;
       justify-content: center;
@@ -173,7 +181,11 @@
   .genre-track {
     display: inline-block;
     white-space: nowrap;
-    will-change: transform;
+    /* NOTE: no will-change. These tracks are ~8000px wide; at dpr2 that exceeds
+       the mobile GPU max texture, so promoting them produced a TILED layer that
+       was re-composited every scroll frame (the genre-scrub jank). Without the
+       hint the browser just repaints the ~viewport-wide visible slice as they
+       slide, which is cheaper on mobile. */
     /* Common style for all four rows — Outfit bold, large + faint (Figma). */
     font-family: var(--font-sans);
     font-weight: 700;
@@ -411,6 +423,14 @@
   @media (max-width: 600px) {
     .book-card-wrap {
       bottom: 49.778px;
+      /* Center horizontally in the viewport while holding the same vertical
+         position. left/right:0 + auto margins centers the max-content-width
+         card WITHOUT a transform, so it never fights the GSAP entrance /
+         hover-lift / scroll-fade transforms on this same element. */
+      left: 0;
+      right: 0;
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 
@@ -555,10 +575,14 @@
   .rail-fill {
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 0%;
+    /* Full height + scaleY(0) from the top: the progress fill is driven by a
+       compositor-only transform in render() (was an every-frame height reflow). */
+    height: 100%;
+    transform: scaleY(0);
+    transform-origin: top center;
     background: var(--flicker-body);
     border-radius: 2px;
-    will-change: height;
+    will-change: transform;
   }
   .rail-labels {
     position: relative;
@@ -592,7 +616,9 @@
   .hiw-phone {
     position: absolute;
     z-index: 12;
-    will-change: left, top, width, height;
+    /* The phone morph is now a compositor-only transform (translate+scale) driven
+       in render() off a fixed base box — hint transform, not layout props. */
+    will-change: transform;
   }
   /* Phone splash (intro) — red Flicker screen; slides left + fades on morph. */
   .hiw-splash {
@@ -678,34 +704,64 @@
      (step + title, then the copy paragraph) instead of the desktop side columns.
      The crossfading 3-beat mechanism is unchanged — only the boxes move. ---- */
   @media (max-width: 760px) {
+    /* The phone frame's rect (left/top/width/height) is rewritten on every scroll
+       frame during the morph, so this big drop-shadow re-rasterizes every frame —
+       the single most expensive GPU op on a phone mid-scroll. Drop the shadow on
+       mobile; the device still reads cleanly against the full-bleed panel. */
+    .hiw-frame { filter: none; }
+    /* The panel is now full-screen on mobile (behind the phone + the text). The
+       written block is anchored to the BOTTOM margin (--hiw-bot-m, JS-set): the
+       copy paragraph sits just above the bottom margin and the step/title
+       heading sits directly above it at a tight gap, so the heading lands in the
+       middle of the lower band with the copy hugging the bottom. */
+    .hiw-pin {
+      /* Both blocks are kept close to their actual text height — the step/title
+         and the copy are each vertically centered in their box, so any extra box
+         height reads as empty space between the heading and the description. */
+      --hiw-copy-h: clamp(74px, 14vh, 128px);
+      --hiw-rail-h: clamp(48px, 9vw, 64px);
+      /* Tight gap between the heading and the description. */
+      --hiw-text-gap: clamp(2px, 0.6vw, 5px);
+    }
     .hiw-rail {
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 0;
-      left: clamp(18px, 6vw, 30px);
-      right: clamp(18px, 6vw, 30px);
-      top: clamp(18px, 5vw, 26px);
+      left: clamp(16px, 5vw, 28px);
+      right: clamp(16px, 5vw, 28px);
+      /* Top-anchored to the phone's bottom edge (--hiw-text-top) so the text
+         rides with the centered phone+text group, not the page bottom. */
+      top: var(--hiw-text-top, 60vh);
       bottom: auto;
       width: auto;
-      height: clamp(74px, 14vw, 96px);
+      height: var(--hiw-rail-h);
       margin: 0;
+      /* Center the step + title heading. */
+      text-align: center;
     }
     /* The vertical progress bar doesn't fit the stacked layout — the
        "Step 1/2/3:" label already carries the progress, so hide the rail. */
     .hiw-rail .rail-track { display: none; }
-    .hiw-rail .rail-labels { min-height: 0; flex: 1 1 auto; }
+    .hiw-rail .rail-labels { min-height: 0; flex: 1 1 auto; text-align: center; }
     .hiw-copy {
       display: block;
-      left: clamp(18px, 6vw, 30px);
-      right: clamp(18px, 6vw, 30px);
-      top: calc(clamp(18px, 5vw, 26px) + clamp(74px, 14vw, 96px) + clamp(8px, 2vw, 14px));
-      bottom: clamp(18px, 5vw, 26px);
+      left: clamp(16px, 5vw, 28px);
+      right: clamp(16px, 5vw, 28px);
+      /* Directly below the heading (rail) by its height + the tight gap. */
+      top: calc(var(--hiw-text-top, 60vh) + var(--hiw-rail-h) + var(--hiw-text-gap));
+      bottom: auto;
+      height: var(--hiw-copy-h);
       width: auto;
+      /* Center the description paragraph. */
+      text-align: center;
       margin: 0;
     }
-    .hiw-copy-beat p { font-size: var(--text-base); }
+    /* Enhanced mobile text sizing. */
+    .hiw-copy-beat p { font-size: var(--text-lg); line-height: 1.45; }
+    .rail-step { font-size: var(--text-base); }
+    .rail-title { font-size: var(--text-xl); }
   }
 
   /* =================================================================
@@ -745,7 +801,7 @@
     font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
     text-wrap: balance;
   }
-  .sw-line { display: block; will-change: opacity, transform, filter; }
+  .sw-line { display: block; }
   .sw-sub {
     margin: 18px auto 0 auto;
     max-width: 560px;
@@ -754,7 +810,7 @@
     font-size: var(--text-base);
     line-height: 1.5;
     text-wrap: pretty;
-    will-change: opacity, transform, filter;
+    will-change: opacity, transform;
   }
   /* Two-tone words start gray (unfilled); JS fills them to ink. */
   .sw-word { color: rgb(188, 180, 173); }
@@ -772,7 +828,7 @@
     height: clamp(380px, 58vh, 760px);
     z-index: 1;
     pointer-events: none;
-    will-change: opacity, transform, filter;
+    will-change: opacity, transform;
   }
   /* Soft blurred gradient at each edge — covers dissolve into it on the
      way in / out of the loop. */
@@ -839,7 +895,9 @@
     border-radius: 18px;
     background: transparent;
     transform-origin: center center;
-    will-change: transform;
+    /* No permanent will-change: there are ~13 cards and the hover morph is the only
+       transform — promoting all of them to standing layers bloated the compositor
+       tree. GSAP promotes the hovered card for its tween; on-demand is enough. */
   }
   /* Tint surface as its own layer — GSAP ramps ITS opacity (not a colour
      alpha), so the exact same hue fades in with zero colour shift. */
@@ -1022,7 +1080,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    will-change: opacity, transform, filter;
+    will-change: opacity, transform;
     /* Children are 3D faces — the panel itself is the flipping card. */
     transform-style: preserve-3d;
   }
@@ -1218,7 +1276,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    will-change: transform, opacity, filter;
+    will-change: transform, opacity;
   }
   /* bg-ellipses.svg — soft blue + brick blurred ellipses behind the heading.
      Centred inside the (centred) group, so it can never bleed up under the
@@ -1284,7 +1342,6 @@
     object-fit: cover;
     background: var(--flicker-canvas-shade);
     flex-shrink: 0;
-    will-change: transform, opacity;
   }
   .gw-avatar + .gw-avatar { margin-left: -14px; }
   .gw-badge-label {
@@ -1349,7 +1406,8 @@
     padding: 0;                 /* the Lottie sits flush; only the content is padded */
     box-shadow: none;
     overflow: hidden;
-    will-change: transform, opacity, filter;
+    /* No permanent will-change — the cards reveal once on scroll-in; GSAP promotes
+       for the tween. Standing layers here just bloated the compositor tree. */
   }
 
   /* Imagery cell ABOVE the title — the Lottie, FLUSH to the card edges with
@@ -1385,8 +1443,13 @@
     color: var(--flicker-ink-soft);
     text-wrap: pretty;
   }
-  /* Reveal word (hero-style blur-in + rise). */
-  .gw-rw { display: inline-block; will-change: transform, filter, opacity; }
+  /* Reveal word (hero-style blur-in + rise). NO permanent will-change: there are
+     ~100 of these words and the hint promoted EACH to its own composited layer that
+     stayed resident even while Growing is offscreen — ~100 extra layers that made
+     the compositor re-layerize the whole page on every scroll frame (the dominant
+     whole-site mobile jank). The reveal is a one-shot entrance; GSAP promotes for
+     the tween's duration on its own. */
+  .gw-rw { display: inline-block; }
 
   /* ---- Audio-player card (Listen Your First Summary) ---- */
   .gw-aud {

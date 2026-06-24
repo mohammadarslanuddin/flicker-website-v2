@@ -124,9 +124,16 @@ export function HowItWorks() {
 
     const anims = [null, null, null];
     const ready = [false, false, false];
+    const lastFrame = [-1, -1, -1]; // last integer Lottie frame rendered per beat
     let tracks = [];
     let lastP = 0;
     let killed = false;
+    // Desktop (fine pointer) keeps the full blur reveals. On touch we SKIP every
+    // scrubbed filter:blur() on this section — re-rasterizing a blurred full-screen
+    // layer on each scroll frame across the long 7×vh pin is the heaviest mobile-GPU
+    // scroll-time op. The opacity/scale tweens still play, so the reveal still reads.
+    const allowBlur = !!(window.matchMedia &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
     // Fixed top-nav height (.flk-bar). Used to vertically center the heading in
     // the band between the header bottom and the top of the phone mockup. The
@@ -188,35 +195,54 @@ export function HowItWorks() {
       // by the mobile CSS). The intro splash starts lower + smaller (so the
       // heading reads above it) and the morph rises + grows it up to the top.
       if (VW <= 760) {
-        const mb = Math.max(14, Math.min(VW * 0.05, 26));     // side margin
-        const phoneTop = headerH + Math.max(10, headerH * 0.14);
-        const botM = Math.max(18, Math.min(VH * 0.035, 34));  // bottom margin
-        const gap = Math.max(16, Math.min(VH * 0.026, 26));   // phone ↔ card gap
-        // Content card height — room for step + title + copy paragraph.
-        const contentH = Math.max(172, Math.min(VH * 0.32, 300));
+        const mb = Math.max(10, Math.min(VW * 0.035, 18));    // side margin (tighter → larger phone)
+        const phoneTop = headerH + Math.max(8, headerH * 0.1);
+        const botM = Math.max(16, Math.min(VH * 0.03, 30));   // bottom margin
+        const gap = Math.max(12, Math.min(VH * 0.02, 20));    // phone ↔ text gap (kept tight)
+        // Reserve for the bottom-anchored written block — MUST mirror the mobile
+        // CSS (--hiw-copy-h + --hiw-text-gap + --hiw-rail-h) so the phone's lower
+        // edge lands right above the heading with no overlap. Trimmed overall so
+        // the phone mockup scales up a little more.
+        const copyH = Math.max(74, Math.min(VH * 0.14, 128));
+        const railH = Math.max(48, Math.min(VW * 0.09, 64));
+        const textGap = Math.max(2, Math.min(VW * 0.006, 5));
+        const contentH = copyH + textGap + railH;
         const maxPhoneW = VW - 2 * mb;
 
-        // Phone height = whatever vertical space is left above the card, but
-        // never so wide it breaks the side margins.
-        let pH = VH - phoneTop - gap - contentH - botM;
-        pH = Math.min(pH, maxPhoneW * PHONE_AR);
-        pH = Math.max(pH, 240);
+        // Vertical band available for the phone (between the header and the
+        // text block, within the bottom margin).
+        const bandH = VH - phoneTop - gap - contentH - botM;
+        // Phone height fills the band, capped by width, then scaled DOWN so the
+        // mockup never crowds the band.
+        const PHONE_SCALE = 0.86;
+        let pH = Math.min(bandH, maxPhoneW * PHONE_AR);
+        pH = Math.max(pH, 260) * PHONE_SCALE;
         let pW = pH / PHONE_AR;
         if (pW > maxPhoneW) { pW = maxPhoneW; pH = pW * PHONE_AR; }
-        const phoneFull = { l: VW / 2 - pW / 2, tp: phoneTop, w: pW, h: pH };
 
-        const panelTop = phoneFull.tp + phoneFull.h + gap;
-        const panelFull = {
-          l: mb, tp: panelTop, w: VW - 2 * mb,
-          h: Math.max(120, VH - panelTop - botM)
-        };
+        // Group the phone + the written block (phone + gap + text) and CENTER the
+        // whole group in the region below the header — the header space is kept
+        // by starting the region at phoneTop, and the bottom margin balances it.
+        const groupH = pH + gap + contentH;
+        const regionH = VH - phoneTop - botM;
+        const groupTop = phoneTop + Math.max(0, (regionH - groupH) / 2);
+        const phoneFull = { l: VW / 2 - pW / 2, tp: groupTop, w: pW, h: pH };
 
-        // Intro splash phone — smaller + centered low so the heading sits above.
-        const spW = Math.min(maxPhoneW * 0.72, VH * 0.42 / PHONE_AR);
+        // The stage panel now fills the WHOLE viewport on mobile (full-bleed),
+        // sitting behind BOTH the phone and the written content — not just the
+        // bottom text card. `textTop` marks where the written column begins (the
+        // old card's top edge); it's exposed as a CSS var so the copy/rail still
+        // lay out in the lower region over this full-screen background.
+        const textTop = phoneFull.tp + phoneFull.h + gap;
+        const panelFull = { l: 0, tp: 0, w: VW, h: VH };
+
+        // Intro splash phone — large and tucked HALF below the viewport, so only
+        // its upper half is visible; the morph then rises it up into phoneFull.
+        const spW = maxPhoneW;
         const spH = spW * PHONE_AR;
-        const phoneSplash = { l: VW / 2 - spW / 2, tp: VH * 0.46, w: spW, h: spH };
+        const phoneSplash = { l: VW / 2 - spW / 2, tp: VH - spH / 2, w: spW, h: spH };
 
-        return { panelFull, phoneFull, phoneSplash };
+        return { panelFull, phoneFull, phoneSplash, textTop, botM };
       }
 
       const mH = Math.max(28, Math.min(VW * 0.022, 40));
@@ -267,25 +293,58 @@ export function HowItWorks() {
       el.style.height = r.h + "px";
     };
 
+    // Progress-INDEPENDENT layout: the heading band, the CSS column vars, the
+    // CONSTANT stage-panel rect + radius, and the phone's FIXED base box. These
+    // depend only on geometry (viewport + header height), never on scroll
+    // progress, so they are set ONCE per geometry change (build / refresh /
+    // resize) — never on the scroll hot path. Writing them every frame (as
+    // before) forced a full reflow on every scroll tick: the dominant mobile
+    // jank in this 7×vh pin. geom() is likewise cached, not recomputed per frame.
+    let cachedG = null;
+    const applyStatic = (G) => {
+      if (!G) return;
+      if (headingRef.current) {
+        headingRef.current.style.top = headerH + "px";
+        headingRef.current.style.height = Math.max(0, G.phoneSplash.tp - headerH) + "px";
+      }
+      if (pinRef.current) {
+        pinRef.current.style.setProperty("--hiw-phone-half", (G.phoneFull.w / 2) + "px");
+        if (G.textTop != null) {
+          pinRef.current.style.setProperty("--hiw-text-top", G.textTop + "px");
+          pinRef.current.style.setProperty("--hiw-bot-m", G.botM + "px");
+        }
+      }
+      const panel = panelRef.current;
+      if (panel) {
+        // panelFull is constant for a given viewport → set the rect + radius once.
+        // Per-frame opacity/scale/blur still run in render() (compositor-only).
+        panel.style.left = G.panelFull.l + "px";
+        panel.style.top = G.panelFull.tp + "px";
+        panel.style.width = G.panelFull.w + "px";
+        panel.style.height = G.panelFull.h + "px";
+        panel.style.borderRadius = G.textTop != null ? "0px" : "22px";
+      }
+      const phone = phoneRef.current;
+      if (phone) {
+        // Fixed base box = the BEATS (full) rect; the splash→full morph is a
+        // compositor-only transform in render(). PHONE_AR is locked, so scaleX ==
+        // scaleY and the rendered rect is identical to the old l/tp/w/h morph.
+        phone.style.left = G.phoneFull.l + "px";
+        phone.style.top = G.phoneFull.tp + "px";
+        phone.style.width = G.phoneFull.w + "px";
+        phone.style.height = G.phoneFull.h + "px";
+        phone.style.transformOrigin = "0 0";
+      }
+    };
+    const recompute = () => { cachedG = geom(); applyStatic(cachedG); };
+
     /* ---- master scrub renderer ---- */
     const render = (p) => {
       lastP = p;
       const panel = panelRef.current;
       const phone = phoneRef.current;
       if (!panel || !phone) return;
-      const G = geom();
-
-      // Center the heading vertically in the band between the nav header bottom
-      // and the top of the mockup — recomputed from live measurements so the
-      // positioning holds at any desktop size (header height + mockup top).
-      if (headingRef.current) {
-        headingRef.current.style.top = headerH + "px";
-        headingRef.current.style.height = Math.max(0, G.phoneSplash.tp - headerH) + "px";
-      }
-      // Expose the beats-phone half-width so the copy/rail columns can anchor at
-      // an EQUAL gap on either side of the centered phone (CSS calc), regardless
-      // of viewport size.
-      if (pinRef.current) pinRef.current.style.setProperty("--hiw-phone-half", (G.phoneFull.w / 2) + "px");
+      const G = cachedG || (cachedG = geom());
 
       // ---- Phase A: genre scrub ----
       const scrubP = clamp01(p / SCRUB_END);
@@ -324,24 +383,25 @@ export function HowItWorks() {
       // rows are already faded + hidden by the end of Phase A above.)
       if (headingRef.current) gsap.set(headingRef.current, { opacity: 1 - clamp01(me * 1.4), y: -me * 12 });
 
-      // Stage panel: fixed margined rect that fades + scales + unblurs in (it is
-      // absent during the splash intro, present for the beats). The phone now
-      // lives OUTSIDE the panel, so the panel's opacity never hides it.
-      setRect(panel, G.panelFull);
-      panel.style.borderRadius = "22px";
+      // Stage panel: rect + radius are set ONCE in applyStatic (constant). Here we
+      // only animate the compositor-cheap fade + scale (+ desktop blur) reveal.
       gsap.set(panel, {
         opacity: me,
         scale: lerp(0.96, 1, me),
-        filter: me > 0.99 ? "none" : `blur(${(1 - me) * 10}px)`,
+        // Blur reveal on desktop only; on touch the opacity+scale fade carries it.
+        filter: !allowBlur || me > 0.99 ? "none" : `blur(${(1 - me) * 10}px)`,
         transformOrigin: "50% 50%"
       });
 
       // Phone: travels + shrinks from the centered splash to the centered beats
-      // position, in viewport px (it is a child of the pin, not the panel).
-      const phoneRect = lerpRect(G.phoneSplash, G.phoneFull, me);
-      setRect(phone, phoneRect);
-      // Opacity is owned by the entry tween (fade-in from bottom) + exitST;
-      // render() only drives the rect, so it never clobbers the entrance.
+      // position — driven by a COMPOSITOR-ONLY transform off the fixed base box
+      // (applyStatic), so there is NO per-frame reflow. Locked PHONE_AR ⇒ uniform
+      // scale, so the rendered rect equals the old left/top/width/height morph.
+      // Opacity is owned by the entry tween + exitST; render() only drives transform.
+      const pr = lerpRect(G.phoneSplash, G.phoneFull, me);
+      const s = G.phoneFull.w ? pr.w / G.phoneFull.w : 1;
+      phone.style.transform =
+        `translate3d(${pr.l - G.phoneFull.l}px, ${pr.tp - G.phoneFull.tp}px, 0) scale(${s})`;
 
       // ---- Splash ↔ Lottie crossfade (ported from home-v2) ----
       // The red Flicker splash slides LEFT and fades while the app screens
@@ -372,7 +432,16 @@ export function HowItWorks() {
         const vis = beatVis(i, sf);
         const holder = holderRefs[i].current;
         if (holder) holder.style.opacity = vis;
-        if (ready[i] && anims[i]) anims[i].goToAndStop(clamp01(sf - i) * b.frames, true);
+        // Lottie is the heaviest per-frame op here: a dense app-screen SVG that
+        // re-renders (and dirties layout) on every goToAndStop. Two wins, both
+        // imperceptible: (1) skip beats that are invisible (vis≈0) — at most two
+        // ever crossfade at once, so this drops ~⅔ of renders; (2) quantize to the
+        // INTEGER frame and skip when unchanged, so a slow scroll doesn't re-render
+        // the same frame. A beat repaints to the correct frame the moment it shows.
+        if (ready[i] && anims[i] && vis > 0.001) {
+          const fr = Math.round(clamp01(sf - i) * b.frames);
+          if (fr !== lastFrame[i]) { lastFrame[i] = fr; anims[i].goToAndStop(fr, true); }
+        }
 
         const cb = copyBeatRefs[i].current;
         if (cb) {
@@ -390,7 +459,9 @@ export function HowItWorks() {
           rb.style.transform = `translateY(calc(-50% + ${(1 - vis) * 10}px))`;
         }
       });
-      if (railFillRef.current) railFillRef.current.style.height = sp * 100 + "%";
+      // Rail progress fill: drive via scaleY (transform-origin top, CSS) so it
+      // grows without a per-frame height reflow. Base height is 100% in CSS.
+      if (railFillRef.current) railFillRef.current.style.transform = `scaleY(${sp})`;
     };
 
     /* ---- build ---- */
@@ -398,6 +469,7 @@ export function HowItWorks() {
     const build = () => {
       measureHeader();
       setupTracks();
+      recompute(); // seed cachedG + apply the constant layout once, before render(0)
 
       // Genre rows: gentle fade + rise as the section arrives.
       gsap.set(rowsRef.current, { opacity: 0, y: 24 });
@@ -410,23 +482,23 @@ export function HowItWorks() {
       // gray -> ink fill is NOT done here — it runs in render() during the
       // pinned horizontal genre scrub (Phase A), so the text fills as the
       // horizontal scroll applies.
-      gsap.set(headingRef.current, { opacity: 0, y: 24, filter: "blur(8px)" });
+      gsap.set(headingRef.current, { opacity: 0, y: 24, filter: allowBlur ? "blur(8px)" : "none" });
       entryT = gsap.to(headingRef.current, {
-        opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "power3.out",
+        opacity: 1, y: 0, filter: allowBlur ? "blur(0px)" : "none", duration: 0.8, ease: "power3.out",
         scrollTrigger: {
           trigger: section, start: "top 82%", end: "top 40%", scrub: 1
         }
       }).scrollTrigger;
 
-      // Phone: fade IN FROM THE BOTTOM as the section sets into the viewport.
-      // The device sits low in the section (≈56% down), so it only crosses the
-      // bottom edge once the section is ~44% in — the entry is timed to that
-      // window so the fade+rise plays WHILE the phone is on screen, finishing
-      // just before the pin engages. render() then only drives the rect, so
-      // opacity/y stay resolved through the pin.
-      gsap.set(phoneRef.current, { opacity: 0, y: 64 });
+      // Phone: fade in as the section sets into the viewport. OPACITY ONLY —
+      // render() now owns the phone's transform (the splash→full morph), so the
+      // entrance must not also animate transform (a `y` rise) or the two would
+      // fight on the same channel. render(0)/applyStatic already park the phone at
+      // the splash rect, so a plain fade reads the same (the morph starts the
+      // instant the pin engages anyway).
+      gsap.set(phoneRef.current, { opacity: 0 });
       phoneEntryT = gsap.to(phoneRef.current, {
-        opacity: 1, y: 0, ease: "power2.out", force3D: false,
+        opacity: 1, ease: "power2.out",
         scrollTrigger: { trigger: section, start: "top 45%", end: "top 5%", scrub: 1 }
       }).scrollTrigger;
 
@@ -440,7 +512,7 @@ export function HowItWorks() {
         invalidateOnRefresh: true,
         onRefreshInit: setupTracks,
         onUpdate: (self) => render(self.progress),
-        onRefresh: () => render(lastP)
+        onRefresh: () => { recompute(); render(lastP); }
       });
 
       loadTrigger = ScrollTrigger.create({
@@ -469,8 +541,10 @@ export function HowItWorks() {
           const f = clamp01(self.progress / 0.5);
           if (pinRef.current) {
             pinRef.current.style.opacity = String(1 - f);
+            // Desktop adds a blur to the exit; on touch the opacity fade alone clears
+            // it — blurring the whole full-viewport pin per frame is too costly.
             const b = f * 18;
-            pinRef.current.style.filter = b > 0.3 ? `blur(${b}px)` : "none";
+            pinRef.current.style.filter = allowBlur && b > 0.3 ? `blur(${b}px)` : "none";
           }
         }
       });
@@ -489,13 +563,28 @@ export function HowItWorks() {
       build();
     }
 
-    const onResize = () => {measureHeader();setupTracks();render(lastP);};
+    // Width-gate + debounce. On touch the address bar show/hide fires `resize`
+    // continuously DURING scroll with only a HEIGHT delta — re-running measureHeader
+    // + setupTracks (reads scrollWidth → forced reflow) + render every tick is pure
+    // jank. render() already recomputes geometry from live VH on the next scroll
+    // frame, so a height-only change needs no re-measure here. Only genuine WIDTH
+    // changes (desktop resize, orientation flip) re-measure, trailing-debounced so a
+    // drag-resize can't thrash.
+    let lastVW = window.innerWidth;
+    let resizeT = 0;
+    const onResize = () => {
+      if (window.innerWidth === lastVW) return;
+      lastVW = window.innerWidth;
+      window.clearTimeout(resizeT);
+      resizeT = window.setTimeout(() => { measureHeader(); setupTracks(); recompute(); render(lastP); }, 150);
+    };
     window.addEventListener("resize", onResize);
     const idle = window.setTimeout(loadLotties, 4500);
 
     return () => {
       killed = true;
       window.clearTimeout(idle);
+      window.clearTimeout(resizeT);
       window.removeEventListener("resize", onResize);
       if (st) st.kill();
       if (loadTrigger) loadTrigger.kill();

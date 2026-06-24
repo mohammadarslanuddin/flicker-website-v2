@@ -325,11 +325,22 @@ export function TestimonialsV7() {
       build();
     }
 
-    const onResize = () => render(lastP);
+    // Width-gate + debounce: render() recomputes geometry from live VH on the next
+    // scroll frame, so a height-only address-bar change (touch tablets >768px) needs
+    // no re-render here. Only genuine width changes re-render, trailing-debounced.
+    let lastVW = window.innerWidth;
+    let resizeT = 0;
+    const onResize = () => {
+      if (window.innerWidth === lastVW) return;
+      lastVW = window.innerWidth;
+      window.clearTimeout(resizeT);
+      resizeT = window.setTimeout(() => render(lastP), 150);
+    };
     window.addEventListener("resize", onResize);
 
     return () => {
       killed = true;
+      window.clearTimeout(resizeT);
       window.removeEventListener("resize", onResize);
       if (st) st.kill();
       if (entryTl) entryTl.kill();
