@@ -280,7 +280,7 @@ export function SiteFooter() {
               </h2>
               <div className="footer-cta-buttons">
                 <a href="#start" className="btn btn-primary">Become a member<span className="btn-arrow" aria-hidden="true"><i className="ph ph-arrow-right"></i></span></a>
-                <a href="#download" className="btn btn-secondary"><span aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><img src="uploads/logos_apple-app-store.svg" alt="" width="20" height="20" style={{ display: "block" }} /><img src="uploads/devicon_google.svg" alt="" width="20" height="20" style={{ display: "block" }} /></span>Download The App</a>
+                <a href="#download" className="btn btn-secondary"><span aria-hidden="true" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}><img src="/uploads/logos_apple-app-store.svg" alt="" width="20" height="20" style={{ display: "block" }} /><img src="/uploads/devicon_google.svg" alt="" width="20" height="20" style={{ display: "block" }} /></span>Download The App</a>
               </div>
             </div>
 
@@ -316,7 +316,7 @@ export function SiteFooter() {
                   <li><a href="#how-it-works">How it works</a></li>
                   <li><a href="#pricing">Pricing</a></li>
                   <li><a href="#faq">FAQ</a></li>
-                  <li><a href="#blog">Blog</a></li>
+                  <li><a href="/blog">Blog</a></li>
                 </ul>
               </div>
 
@@ -332,12 +332,12 @@ export function SiteFooter() {
             <div className="footer-bottom">
               <span className="footer-copyright">© 2026 Flicker App, All Right Reserved. Made with Love.</span>
               <ul className="footer-legal">
-                <li><a href="#terms">Terms &amp; conditions</a></li>
-                <li><a href="#privacy">Privacy policy</a></li>
-                <li><a href="#cookies">Cookies</a></li>
+                <li><a href="/terms">Terms &amp; conditions</a></li>
+                <li><a href="/privacy">Privacy policy</a></li>
+                <li><a href="/cookies">Cookies</a></li>
               </ul>
               <a className="footer-brand" href="#top" aria-label="Flicker App home">
-                <img src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
+                <img src="/flicker/logo-flicker-brick.svg" alt="Flicker App" />
               </a>
             </div>
 
@@ -346,4 +346,5 @@ export function SiteFooter() {
     </React.Fragment>);
 }
 
-window.SiteFooter = SiteFooter;
+// Guarded: content pages SSR this module, so this must not run on the server.
+if (typeof window !== "undefined") window.SiteFooter = SiteFooter;

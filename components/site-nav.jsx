@@ -18,14 +18,16 @@ import { createPortal } from "react-dom";
    ===================================================================== */
 const { useRef, useEffect, useState } = React;
 
-// One single word per section we've built — each jumps to that section.
+// Menu items. Most are on-home section jumps (target); items with `href` are
+// real routes (Blog → the new blog page). Off-home, section jumps fall back to
+// navigating to the home page (see the click wiring below).
 const MENU_ITEMS = [
 { label: "Home", target: '[data-screen-label="01 Hero"]' },
 { label: "How it works", target: '[data-screen-label="02 How it works"]' },
 { label: "Why Flicker App", target: '[data-screen-label="05 Growing"]' },
 { label: "Reviews", target: '[data-screen-label="07 Reader Stories"]' },
 { label: "FAQ", target: '[data-screen-label="08 FAQ"]' },
-{ label: "Blogs", target: '[data-screen-label="06 Listen"]' }];
+{ label: "Blog", href: "/blog" }];
 
 // Inline Flicker mark (accepts currentColor) for the dock pill.
 const FLICKER_MARK =
@@ -589,13 +591,24 @@ export function SiteNav() {
     if (logo) logo.addEventListener("click", onLogo);
     if (dockLogo) dockLogo.addEventListener("click", onLogo);
     if (backdrop) backdrop.addEventListener("click", onBackdrop);
+    // Are we on the home page? Section jumps only work there; elsewhere a section
+    // item navigates back home, and route items (Blog) navigate to their href.
+    const isHome = typeof window !== "undefined" && window.location.pathname === "/";
+    const activate = (i, closePill) => {
+      const item = MENU_ITEMS[i];
+      setOpen(false);
+      if (closePill) setPillOpen(false);
+      if (item.href) { window.location.href = item.href; return; }
+      if (isHome) go(item.target);
+      else window.location.href = "/";
+    };
     const handlers = links.map((el, i) => {
-      const h = (e) => {e.preventDefault();go(MENU_ITEMS[i].target);};
+      const h = (e) => {e.preventDefault();activate(i, false);};
       el.addEventListener("click", h);
       return h;
     });
     const pillHandlers = pillLinks.map((el, i) => {
-      const h = (e) => {e.preventDefault();setPillOpen(false);go(MENU_ITEMS[i].target);};
+      const h = (e) => {e.preventDefault();activate(i, true);};
       el.addEventListener("click", h);
       return h;
     });
@@ -887,8 +900,8 @@ export function SiteNav() {
       {/* Top bar — logo + Sign in + icon-only hamburger */}
       <header className={"flk-bar" + (open ? " is-open" : "")} ref={barRef}>
         <a className="flk-logo" href="/" aria-label="Flicker App home" ref={logoRef}>
-          <img className="flk-logo-brick" src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
-          <img className="flk-logo-white" src="flicker/logo-flicker-white.svg" alt="Flicker App" />
+          <img className="flk-logo-brick" src="/flicker/logo-flicker-brick.svg" alt="Flicker App" />
+          <img className="flk-logo-white" src="/flicker/logo-flicker-white.svg" alt="Flicker App" />
         </a>
         <div className={"flk-bar-right" + (open ? " is-open" : "")}>
           <a href="#signin" className="cta cta-secondary flk-signin">Sign in<span className="cta-arrow" aria-hidden="true"><i className="ph ph-arrow-right" style={{ display: "block", fontSize: 16, lineHeight: 1 }}></i></span></a>
@@ -905,8 +918,8 @@ export function SiteNav() {
         <div className="flk-pillrow">
           <div className="flk-pill-left">
             <a className="flk-dock-logo" href="/" aria-label="Flicker App home" ref={dockLogoRef}>
-              <img className="flk-dock-logo-brick" src="flicker/logo-flicker-brick.svg" alt="Flicker App" />
-              <img className="flk-dock-logo-white" src="flicker/logo-flicker-white.svg" alt="Flicker App" />
+              <img className="flk-dock-logo-brick" src="/flicker/logo-flicker-brick.svg" alt="Flicker App" />
+              <img className="flk-dock-logo-white" src="/flicker/logo-flicker-white.svg" alt="Flicker App" />
             </a>
           </div>
           <div className="flk-pill-right">
@@ -923,15 +936,15 @@ export function SiteNav() {
         <div className="flk-pill-body" ref={pillBodyRef}>
           <p className="flk-body-cap">Menu</p>
           {MENU_ITEMS.map((it, i) =>
-          <a className="flk-mlink" href="#" key={it.label}
+          <a className="flk-mlink" href={it.href || "#"} key={it.label}
           ref={(el) => {if (el) pillLinksRef.current[i] = el;}}>{it.label}</a>
           )}
           <div className="flk-body-div" aria-hidden="true"></div>
           <p className="flk-body-cap">Resources</p>
-          <a className="flk-slink" href="#terms-conditions">Terms &amp; Conditions</a>
-          <a className="flk-slink" href="#privacy">Privacy Policy</a>
-          <a className="flk-slink" href="#terms-of-service">Terms of Service</a>
-          <a className="flk-slink" href="#cookies">Cookies</a>
+          <a className="flk-slink" href="/terms">Terms &amp; Conditions</a>
+          <a className="flk-slink" href="/privacy">Privacy Policy</a>
+          <a className="flk-slink" href="/terms-of-service">Terms of Service</a>
+          <a className="flk-slink" href="/cookies">Cookies</a>
           <p className="flk-body-cap">Social</p>
           <a className="flk-slink" href="#instagram">Instagram</a>
           <a className="flk-slink" href="#youtube">YouTube</a>
@@ -952,7 +965,7 @@ export function SiteNav() {
         <p className="flk-menu-caption">Menu</p>
         <nav className="flk-menu-list">
           {MENU_ITEMS.map((it, i) =>
-          <a className="flk-menu-link" href="#" key={it.label}
+          <a className="flk-menu-link" href={it.href || "#"} key={it.label}
           ref={(el) => {if (el) linksRef.current[i] = el;}}>
               {it.label}
             </a>
@@ -960,10 +973,10 @@ export function SiteNav() {
         </nav>
         <div className="flk-menu-divider" aria-hidden="true"></div>
         <p className="flk-menu-caption">Resources</p>
-        <a className="flk-menu-sublink" href="#terms-conditions">Terms &amp; Conditions</a>
-        <a className="flk-menu-sublink" href="#privacy">Privacy Policy</a>
-        <a className="flk-menu-sublink" href="#terms-of-service">Terms of Service</a>
-        <a className="flk-menu-sublink" href="#cookies">Cookies</a>
+        <a className="flk-menu-sublink" href="/terms">Terms &amp; Conditions</a>
+        <a className="flk-menu-sublink" href="/privacy">Privacy Policy</a>
+        <a className="flk-menu-sublink" href="/terms-of-service">Terms of Service</a>
+        <a className="flk-menu-sublink" href="/cookies">Cookies</a>
         <p className="flk-menu-caption">Social</p>
         <a className="flk-menu-sublink" href="#instagram">Instagram</a>
         <a className="flk-menu-sublink" href="#youtube">YouTube</a>
@@ -977,4 +990,6 @@ export function SiteNav() {
   );
 }
 
-window.SiteNav = SiteNav;
+// Guarded: content pages SSR this module (the home page imports it with
+// ssr:false), so this global assignment must not run on the server.
+if (typeof window !== "undefined") window.SiteNav = SiteNav;

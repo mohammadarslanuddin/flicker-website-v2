@@ -1,4 +1,5 @@
 import Script from "next/script";
+import { Preloader } from "../components/preloader";
 
 export const metadata = {
   title: "Flicker App: Smart Book Summaries, Read or Listen in Minutes",
@@ -42,6 +43,11 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="/page.css" />
       </head>
       <body className="flicker-root" suppressHydrationWarning>
+        {/* Branded loading overlay. Mounted here (a sibling of #smooth-wrapper)
+            so position:fixed resolves against the viewport, not ScrollSmoother's
+            transformed #smooth-content. It self-gates to the home route. */}
+        <Preloader />
+
         {/* ScrollSmoother needs the wrapper + content pair. #root keeps the
             original DOM shape (and the #root { min-height:100vh } rule). */}
         <div id="smooth-wrapper">

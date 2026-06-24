@@ -393,6 +393,21 @@
   --radius-2xl:  1.75rem;
   --radius-full: 9999px;
 
+  /* Content page layout — shared by every (content) route (Blog, Blog Post,
+     legal/Template docs) so they stretch to one consistent wide measure while
+     keeping the same side margin. Use these instead of hard-coded widths. */
+  --page-max:      1680px;   /* wide centered container */
+  --page-gutter:   44px;     /* side margin preserved at all widths */
+  --page-prose:    none;     /* content fills the full track — stretched to the margins */
+  /* Vertical padding for the page-title block (the head section) on every
+     (content) route. Single source of truth: every template head references
+     these, so adjusting them here reflects across all template-based pages
+     (Blog, Blog Post, legal/Template docs). The home page has its own hero and
+     is handled separately, so it is intentionally unaffected. Currently 1.5× the
+     prior base (120px desktop / 104px mobile) for extra breathing room. */
+  --page-head-pad-y:    180px;   /* desktop — 1.5× the 120px base */
+  --page-head-pad-y-sm: 156px;   /* mobile  — 1.5× the 104px base */
+
   /* Subtle shadow system — Flicker stays restrained */
   --shadow-xs: 0 1px 2px 0 hsl(345 30% 10% / 0.04);
   --shadow-sm: 0 1px 3px 0 hsl(345 30% 10% / 0.06), 0 1px 2px -1px hsl(345 30% 10% / 0.04);

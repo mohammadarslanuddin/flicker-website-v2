@@ -182,7 +182,14 @@ export default function App() {
     // Wait for fonts (and the pinned genres trigger that depends on font
     // metrics) before measuring section bounds.
     let cleanupTriggers = [];
-    const run = () => { cleanupTriggers = setup(); };
+    const run = () => {
+      cleanupTriggers = setup();
+      // Signal the site-wide preloader (components/preloader.jsx) that the home
+      // app's heavy setup (ScrollSmoother + section triggers, gated on fonts) is
+      // done, so it can stop looping and fade out. Content pages don't dispatch
+      // this; the preloader falls back to window-load + fonts.ready there.
+      window.dispatchEvent(new Event("flicker:ready"));
+    };
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => requestAnimationFrame(run));
     } else {
